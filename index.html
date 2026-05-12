@@ -1,0 +1,3786 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>BCH — Sala de Máquinas El Bosque</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-page: #0a1424;
+  --bg-panel: #142036;
+  --bg-panel-2: #1a2942;
+  --bg-elev: #1f3050;
+  --border: #243a5e;
+  --border-soft: #1e2f4d;
+  --text: #e6ecf5;
+  --text-dim: #8fa3c2;
+  --text-mute: #5a6f8f;
+  --accent: #4ea1ff;
+  --accent-2: #6ec1ff;
+  --ok: #34d399;
+  --ok-dim: #1f7a5a;
+  --warn: #f59e0b;
+  --warn-dim: #8a5a0d;
+  --crit: #ef4444;
+  --crit-dim: #8a2a2a;
+  --neutral: #64748b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Manrope', sans-serif;
+  background: var(--bg-page);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 18px 24px 50px;
+  font-size: 13px;
+  line-height: 1.4;
+  background-image:
+    radial-gradient(ellipse at top left, rgba(78, 161, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(110, 193, 255, 0.04) 0%, transparent 50%);
+}
+
+/* ===== Header ===== */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo-mark {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, #003c7e, #0061d4);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px; letter-spacing: 0.5px;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 2px 12px rgba(0, 97, 212, 0.25);
+}
+.title-block .eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 2px; color: var(--text-mute);
+  text-transform: uppercase;
+}
+.title-block h1 {
+  font-size: 20px; font-weight: 700; letter-spacing: -0.3px;
+  margin-top: 3px;
+}
+.title-block h1 .subtitle {
+  color: var(--text-dim); font-weight: 400; margin-left: 8px;
+}
+.header-right { display: flex; align-items: center; gap: 22px; }
+.live-indicator {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+}
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ok); box-shadow: 0 0 12px var(--ok);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.timestamp { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-mute); }
+
+/* ===== Date Range Modal ===== */
+#daterange-modal {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9998;
+}
+#daterange-modal.show {
+  display: flex !important;
+  align-items: center; justify-content: center;
+}
+.daterange-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(10, 20, 36, 0.7);
+  backdrop-filter: blur(2px);
+}
+.daterange-content {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0;
+  width: 90%; max-width: 460px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+.daterange-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.daterange-close {
+  background: transparent; border: none;
+  color: var(--text-mute);
+  font-size: 22px;
+  cursor: pointer;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px;
+}
+.daterange-close:hover { color: var(--text); background: var(--bg-panel-2); }
+.daterange-body { padding: 18px 20px; }
+.daterange-presets {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.daterange-presets button {
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border-soft);
+  color: var(--text-dim);
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.daterange-presets button:hover { background: var(--bg-elev); color: var(--text); border-color: var(--accent); }
+.daterange-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.daterange-field { display: flex; flex-direction: column; gap: 5px; }
+.daterange-field label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.daterange-field input {
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 11px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color-scheme: dark;
+}
+.daterange-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.daterange-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.dr-btn {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.dr-cancel {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.dr-cancel:hover { color: var(--text); background: var(--bg-panel-2); }
+.dr-apply {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+}
+.dr-apply:hover { background: #6ec1ff; }
+#header-alarm-badge {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 12px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  color: var(--crit);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+#header-alarm-badge:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: var(--crit);
+}
+.alarm-pulse {
+  width: 8px; height: 8px;
+  background: var(--crit);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--crit);
+  animation: pulse 1.5s infinite;
+}
+.alarm-badge-label {
+  font-weight: 500;
+  color: rgba(239, 68, 68, 0.8);
+  letter-spacing: 0.5px;
+}
+
+/* Hint banner */
+.hint-banner {
+  background: rgba(78, 161, 255, 0.07);
+  border: 1px solid rgba(78, 161, 255, 0.2);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  display: flex; align-items: center; gap: 10px;
+}
+.hint-banner .ic {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 12px;
+}
+.hint-banner kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text);
+  margin: 0 2px;
+}
+
+/* Updated timestamps */
+.panel-meta .freshness {
+  color: var(--ok);
+  font-size: 9px;
+  margin-left: 6px;
+}
+
+/* Alarms section in overview */
+.overview-alarm-strip {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.overview-alarm-strip:hover {
+  background: rgba(239, 68, 68, 0.12);
+}
+.overview-alarm-strip .icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--crit);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700;
+}
+.overview-alarm-strip .body { flex: 1; }
+.overview-alarm-strip .title-line {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.overview-alarm-strip .sub-line {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.overview-alarm-strip .arrow {
+  color: var(--text-mute);
+  font-size: 18px;
+}
+
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 22px;
+  gap: 4px;
+}
+.tab {
+  padding: 10px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mute);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+  display: flex; align-items: center; gap: 8px;
+}
+.tab:hover:not(.active) { color: var(--text-dim); }
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+.tab .tab-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  background: var(--bg-panel-2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--text-dim);
+}
+.tab.active .tab-count { background: var(--accent); color: #fff; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== Common ===== */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.panel-title {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.4px;
+  color: var(--text-dim);
+}
+.panel-title .accent-dot {
+  display: inline-block;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent); margin-right: 8px;
+  vertical-align: middle;
+}
+.panel-meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-mute); }
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin: 22px 0 10px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--border-soft);
+}
+
+.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+.col-3 { grid-column: span 3; }
+.col-4 { grid-column: span 4; }
+.col-5 { grid-column: span 5; }
+.col-6 { grid-column: span 6; }
+.col-7 { grid-column: span 7; }
+.col-8 { grid-column: span 8; }
+.col-12 { grid-column: span 12; }
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 8px; border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.status-badge.ok { background: var(--ok-dim); color: var(--ok); }
+.status-badge.warn { background: var(--warn-dim); color: var(--warn); }
+.status-badge.crit { background: var(--crit-dim); color: var(--crit); }
+.status-badge.neutral { background: #2a3a55; color: var(--text-dim); }
+
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.dot.on { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.dot.off { background: var(--neutral); }
+.dot.fault { background: var(--crit); box-shadow: 0 0 8px var(--crit); }
+
+/* Tooltips - JS based (more reliable) */
+.tip {
+  position: relative;
+  cursor: help;
+  display: inline-block;
+  border-bottom: 1px dotted var(--text-mute);
+}
+.tip::after {
+  content: 'ⓘ';
+  display: inline-block; margin-left: 4px;
+  font-size: 10px; color: var(--text-mute);
+  vertical-align: middle; transition: color 0.15s;
+}
+.tip:hover { color: var(--accent); }
+.tip:hover::after { color: var(--accent); }
+
+/* Floating tooltip container (managed by JS) */
+#tt {
+  position: fixed;
+  background: #0a1424;
+  color: var(--text);
+  padding: 10px 13px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  text-transform: none;
+  white-space: pre-line;
+  max-width: 290px;
+  line-height: 1.55;
+  font-family: 'Manrope', sans-serif;
+  z-index: 9999;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+#tt.show { opacity: 1; }
+
+/* ===== KPI Cards (Overview) ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.kpi {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 16px 18px;
+  position: relative;
+}
+.kpi::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  height: 2px; width: 100%; background: var(--accent);
+  border-radius: 8px 8px 0 0;
+}
+.kpi.ok::before { background: var(--ok); }
+.kpi.warn::before { background: var(--warn); }
+.kpi.crit::before { background: var(--crit); }
+.kpi-label {
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.3px;
+  color: var(--text-dim); margin-bottom: 10px;
+}
+.kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 30px; font-weight: 700;
+  line-height: 1; letter-spacing: -1px;
+}
+.kpi-value .unit { font-size: 13px; color: var(--text-dim); font-weight: 500; margin-left: 4px; }
+.kpi-sub-line {
+  display: flex; justify-content: space-between;
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; color: var(--text-mute);
+}
+.kpi-sub-line .delta.pos { color: var(--ok); }
+.kpi-sub-line .delta.neg { color: var(--crit); }
+
+/* KPI Dual: dos valores en una sola card */
+.kpi-dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: end;
+}
+.kpi-dual .col {
+  display: flex; flex-direction: column;
+}
+.kpi-dual .col + .col {
+  padding-left: 18px;
+  border-left: 1px solid var(--border-soft);
+}
+.kpi-dual .big {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px; font-weight: 700;
+  line-height: 1; letter-spacing: -1px;
+}
+.kpi-dual .big .unit { font-size: 13px; color: var(--text-dim); font-weight: 500; margin-left: 3px; }
+.kpi-dual .big.ok { color: var(--ok); }
+.kpi-dual .big.warn { color: var(--warn); }
+.kpi-dual .big.crit { color: var(--crit); }
+.kpi-dual .sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; color: var(--text-mute);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-top: 5px;
+}
+.kpi-band {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-mute);
+  display: flex; justify-content: space-between;
+}
+.kpi-band .delta.pos { color: var(--ok); }
+.kpi-band .delta.neg { color: var(--crit); }
+
+/* Period picker global (en header del overview) */
+.overview-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+}
+.overview-header .title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-mute);
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.period-picker-global {
+  display: flex; gap: 4px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  padding: 3px;
+  border-radius: 6px;
+}
+.period-picker-global button {
+  background: transparent; border: none;
+  color: var(--text-dim);
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px; font-weight: 600;
+  padding: 7px 13px; border-radius: 4px;
+  cursor: pointer; transition: all 0.15s;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.period-picker-global button.active { background: var(--accent); color: #fff; }
+.period-picker-global button:hover:not(.active) { color: var(--text); }
+
+/* ===== Asset table ===== */
+.asset-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.asset-table thead th {
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--text-mute);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.asset-table tbody tr {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.asset-table tbody tr:hover { background: var(--bg-panel-2); }
+.asset-table tbody tr.selected {
+  background: rgba(78, 161, 255, 0.1);
+  outline: 1px solid rgba(78, 161, 255, 0.3);
+  outline-offset: -1px;
+}
+.asset-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 12px;
+}
+.asset-table .num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+.asset-table .num.ok { color: var(--ok); }
+.asset-table .num.warn { color: var(--warn); }
+.asset-table .num.crit { color: var(--crit); }
+.asset-table .num.dim { color: var(--text-mute); }
+.asset-table .asset-name {
+  font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* ===== Selected asset section ===== */
+.asset-detail-header {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+}
+.detail-title {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; font-weight: 700;
+}
+.detail-title .badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 3px 8px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+.period-picker {
+  display: flex; gap: 4px;
+  background: var(--bg-panel-2);
+  padding: 3px;
+  border-radius: 5px;
+}
+.period-picker button {
+  background: transparent; border: none;
+  color: var(--text-dim);
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px; font-weight: 600;
+  padding: 6px 12px; border-radius: 3px;
+  cursor: pointer; transition: all 0.15s;
+}
+.period-picker button.active { background: var(--accent); color: #fff; }
+.period-picker button:hover:not(.active) { color: var(--text); }
+
+/* ===== Time series chart ===== */
+.chart-wrap { height: 220px; position: relative; }
+.chart-wrap svg { width: 100%; height: 100%; }
+.chart-legend {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; color: var(--text-dim);
+}
+.chart-legend .item { display: flex; align-items: center; gap: 6px; }
+.chart-legend .sw { width: 18px; height: 3px; border-radius: 1px; }
+
+/* ===== Asset KPIs (inside asset detail) ===== */
+.mini-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.mini-kpi {
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 5px;
+  padding: 10px 12px;
+}
+.mini-kpi-label {
+  font-size: 9.5px; color: var(--text-mute);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.mini-kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 700;
+}
+.mini-kpi-value.ok { color: var(--ok); }
+.mini-kpi-value.warn { color: var(--warn); }
+.mini-kpi-value.crit { color: var(--crit); }
+.mini-kpi-value .unit { font-size: 11px; color: var(--text-mute); margin-left: 2px; font-weight: 500; }
+.mini-kpi-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-mute); margin-top: 3px;
+}
+
+/* ===== HRR ===== */
+.hrr-display { display: flex; flex-direction: column; align-items: center; padding: 8px 0; }
+.hrr-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 36px; font-weight: 700; line-height: 1;
+}
+.hrr-value.balanced { color: var(--ok); }
+.hrr-label {
+  font-size: 10px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  margin-top: 6px;
+}
+.hrr-scale {
+  position: relative; width: 100%; height: 7px;
+  background: linear-gradient(90deg,
+    var(--crit) 0%, var(--crit) 20%,
+    var(--warn) 25%, var(--warn) 40%,
+    var(--ok) 45%, var(--ok) 60%,
+    var(--warn) 65%, var(--warn) 80%,
+    var(--crit) 85%, var(--crit) 100%);
+  border-radius: 4px; margin-top: 14px;
+}
+.hrr-marker {
+  position: absolute; top: -3px; left: 52%;
+  width: 2px; height: 13px;
+  background: var(--text); transform: translateX(-50%);
+}
+.hrr-scale-labels {
+  display: flex; justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-mute); margin-top: 4px;
+}
+
+/* ===== Diag matrix ===== */
+.diag-matrix {
+  display: grid;
+  grid-template-columns: 65px 1fr 1fr;
+  grid-template-rows: 26px 1fr 1fr;
+  gap: 4px;
+}
+.diag-cell {
+  padding: 12px 8px; border-radius: 4px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-size: 10.5px; font-weight: 600; text-align: center;
+  min-height: 64px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.diag-cell:hover { transform: scale(1.03); }
+.diag-label-h, .diag-label-v {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-mute);
+  display: flex; align-items: center; justify-content: center;
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+.diag-label-v { transform: rotate(-90deg); white-space: nowrap; }
+.diag-cell.optimal { background: rgba(52,211,153,0.15); color: var(--ok); border: 1px solid rgba(52,211,153,0.3); }
+.diag-cell.rejection { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid rgba(245,158,11,0.3); }
+.diag-cell.hydraulic { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid rgba(245,158,11,0.3); }
+.diag-cell.chiller { background: rgba(239,68,68,0.15); color: var(--crit); border: 1px solid rgba(239,68,68,0.3); }
+.diag-cell.active {
+  background: rgba(52,211,153,0.3) !important;
+  box-shadow: inset 0 0 0 2px var(--ok);
+}
+.diag-cell .pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px; margin-top: 3px;
+}
+
+/* ===== Monthly evolution bars ===== */
+.monthly-bars-wrap {
+  position: relative;
+  padding-top: 18px;
+}
+.monthly-bars { height: 90px; display: flex; align-items: flex-end; gap: 4px; padding: 0 4px; position: relative; }
+.monthly-bars .bar-col {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  height: 100%;
+}
+.monthly-bars .bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  transition: opacity 0.2s;
+}
+.monthly-bars .bar-col:hover .bar { opacity: 0.75; }
+.monthly-bars .bar-value {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+.monthly-bars .bar-col.current .bar-value { color: var(--accent); }
+.monthly-axis {
+  display: flex; justify-content: space-between;
+  margin-top: 6px;
+  padding: 0 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-mute);
+}
+.monthly-axis span { flex: 1; text-align: center; }
+
+/* ===== Responsive ===== */
+@media (max-width: 1200px) {
+  body { padding: 14px 16px 40px; font-size: 12px; }
+  .kpi-value { font-size: 26px; }
+  .kpi-dual .big { font-size: 24px; }
+  .kpi-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+@media (max-width: 980px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .col-3, .col-4, .col-5, .col-6, .col-7, .col-8 { grid-column: span 12; }
+  .ma-grid { grid-template-columns: repeat(5, 1fr); }
+  .header { flex-wrap: wrap; gap: 12px; }
+  .overview-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .period-picker-global { width: 100%; }
+  .period-picker-global button { flex: 1; padding: 7px 8px; font-size: 10.5px; }
+  .tabs { overflow-x: auto; flex-wrap: nowrap; }
+  .tab { white-space: nowrap; padding: 10px 12px; font-size: 11px; }
+}
+
+@media (max-width: 720px) {
+  body { padding: 12px 12px 30px; }
+  .kpi-grid { grid-template-columns: 1fr !important; }
+  .kpi-dual { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .kpi-dual .col + .col { padding-left: 12px; }
+  .kpi-dual .big { font-size: 22px; }
+  .ma-grid { grid-template-columns: repeat(3, 1fr); }
+  .header-right { gap: 12px; flex-wrap: wrap; }
+  .title-block h1 { font-size: 16px; }
+  .title-block h1 .subtitle { display: none; }
+  .asset-table { font-size: 11px; }
+  .asset-table thead th, .asset-table tbody td { padding: 8px 6px; }
+  .mini-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .diag-matrix { width: 100% !important; }
+  .monthly-bars .bar-value { font-size: 8px; }
+  .chart-wrap { height: 180px; }
+}
+
+@media (max-width: 480px) {
+  .asset-table { display: block; overflow-x: auto; white-space: nowrap; }
+  .ma-grid { grid-template-columns: repeat(2, 1fr); }
+  .timestamp, .live-indicator { font-size: 10px; }
+}
+
+/* ===== Sequence list (mini) ===== */
+.seq-list { display: flex; flex-direction: column; gap: 6px; }
+.seq-row {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--border);
+  border-radius: 4px;
+  font-size: 11.5px;
+}
+.seq-row.crit { border-left-color: var(--crit); }
+.seq-row.high { border-left-color: var(--warn); }
+.seq-row.med { border-left-color: var(--accent); }
+.seq-id { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--text-mute); }
+.seq-name { color: var(--text); }
+.seq-pct { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 700; min-width: 44px; text-align: right; }
+.seq-pct.ok { color: var(--ok); }
+.seq-pct.warn { color: var(--warn); }
+.seq-pct.crit { color: var(--crit); }
+
+/* ===== Alarms ===== */
+.alarm-list { display: flex; flex-direction: column; gap: 7px; }
+.alarm {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  font-size: 12px;
+}
+.alarm.crit { border-left: 3px solid var(--crit); }
+.alarm.warn { border-left: 3px solid var(--warn); }
+.alarm-icon {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.alarm.crit .alarm-icon { background: rgba(239,68,68,0.18); color: var(--crit); }
+.alarm.warn .alarm-icon { background: rgba(245,158,11,0.18); color: var(--warn); }
+.alarm-text .src { color: var(--text-mute); font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-right: 6px; }
+.alarm-text .descr { color: var(--text); }
+.alarm-duration { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-align: right; }
+.alarm-duration .lbl { font-size: 9px; color: var(--text-mute); display: block; }
+
+/* ===== Alarm History Table ===== */
+.alarm-history-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 11.5px;
+}
+.alarm-history-table thead th {
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--text-mute);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.alarm-history-table tbody td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.alarm-history-table tbody tr:hover { background: var(--bg-panel-2); }
+.alarm-history-table .sev-pill {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.alarm-history-table .sev-pill.critical { background: var(--crit-dim); color: var(--crit); }
+.alarm-history-table .sev-pill.major { background: rgba(239,68,68,0.12); color: var(--crit); }
+.alarm-history-table .sev-pill.warning { background: var(--warn-dim); color: var(--warn); }
+.alarm-history-table .status-pill {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.alarm-history-table .status-pill.active { background: var(--crit-dim); color: var(--crit); }
+.alarm-history-table .status-pill.cleared { background: rgba(100,116,139,0.2); color: var(--text-dim); }
+.alarm-history-table .ack-badge {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-size: 8.5px;
+  background: rgba(78,161,255,0.15);
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  margin-left: 4px;
+}
+.alarm-history-table .equip {
+  color: var(--text);
+  font-weight: 700;
+}
+.alarm-history-table .duration-cell {
+  color: var(--text);
+}
+.alarm-history-table .ts {
+  color: var(--text-dim);
+  font-size: 10.5px;
+}
+
+/* ===== Ranking de equipos ===== */
+.ranking-list {
+  display: flex; flex-direction: column;
+  gap: 7px;
+}
+.ranking-row {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--bg-panel-2);
+  border-radius: 4px;
+  font-size: 11.5px;
+}
+.ranking-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-mute);
+}
+.ranking-bar-container {
+  display: flex; flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.ranking-name {
+  color: var(--text);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.ranking-bar {
+  height: 4px;
+  background: var(--bg-elev);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.ranking-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.ranking-bar-fill.crit { background: var(--crit); }
+.ranking-bar-fill.warn { background: var(--warn); }
+.ranking-bar-fill.ok { background: var(--ok); }
+.ranking-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 50px;
+  text-align: right;
+}
+.ranking-count.crit { color: var(--crit); }
+.ranking-count.warn { color: var(--warn); }
+.ranking-count.ok { color: var(--ok); }
+.ranking-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--text-mute);
+}
+
+/* ===== Donut Severity ===== */
+.donut-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 10px 0;
+}
+.donut-svg-wrap {
+  flex-shrink: 0;
+  position: relative;
+}
+.donut-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.donut-center .big {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.donut-center .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-top: 4px;
+}
+.donut-legend {
+  flex: 1;
+  display: flex; flex-direction: column;
+  gap: 8px;
+}
+.donut-legend-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 0;
+  font-size: 11.5px;
+}
+.donut-legend-item .swatch {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+}
+.donut-legend-item .name {
+  color: var(--text);
+  flex: 1;
+}
+.donut-legend-item .count {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+/* Pagination simple */
+.alarm-pagination {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border-soft);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-mute);
+}
+.alarm-pagination .pages {
+  display: flex; gap: 4px;
+}
+.alarm-pagination button {
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 4px 9px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 10.5px;
+  cursor: pointer;
+}
+.alarm-pagination button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.alarm-pagination button:hover:not(.active):not(:disabled) { color: var(--text); }
+.alarm-pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Selectores M/A */
+.ma-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.ma-cell {
+  padding: 8px 6px; border-radius: 4px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border-soft);
+  display: flex; flex-direction: column; gap: 4px; align-items: center;
+}
+.ma-cell .ma-name { color: var(--text-dim); font-size: 9px; font-weight: 700; }
+.ma-cell .ma-state {
+  font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 2px; width: 100%;
+}
+.ma-state.auto { background: rgba(52,211,153,0.15); color: var(--ok); }
+.ma-state.manual { background: rgba(245,158,11,0.2); color: var(--warn); }
+
+/* ===== Flow diagram (mini) ===== */
+.flow-diagram {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+}
+.flow-block {
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; flex-direction: column; gap: 5px;
+  position: relative;
+}
+.flow-block:hover {
+  border-color: var(--accent);
+  background: rgba(78, 161, 255, 0.08);
+}
+.flow-block.active {
+  border-color: var(--accent);
+  background: rgba(78, 161, 255, 0.12);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.flow-block .fb-name {
+  font-size: 10px; font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1.2px;
+}
+.flow-block .fb-state {
+  display: flex; align-items: baseline; gap: 6px;
+}
+.flow-block .fb-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 700;
+  color: var(--text);
+}
+.flow-block .fb-total {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-mute);
+}
+.flow-block .fb-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ok);
+}
+.flow-block .fb-status.warn { color: var(--warn); }
+.flow-block .fb-status.crit { color: var(--crit); }
+
+.flow-arrow {
+  color: var(--text-mute);
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Asset table group separator */
+.asset-table tbody tr.group-sep td {
+  background: var(--bg-panel-2);
+  color: var(--text-mute);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: default;
+}
+.asset-table tbody tr.group-sep:hover { background: var(--bg-panel-2); }
+.asset-table tbody tr.group-sep td .count {
+  color: var(--text-dim);
+  margin-left: 6px;
+}
+
+/* Filter indicator on table */
+.table-filter-active {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  margin-left: 10px;
+  padding: 3px 8px;
+  background: rgba(78, 161, 255, 0.12);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.table-filter-active:hover { background: rgba(78, 161, 255, 0.2); }
+.table-filter-active .x { font-size: 12px; }
+
+@media (max-width: 980px) {
+  .flow-diagram { grid-template-columns: 1fr; gap: 6px; }
+  .flow-arrow { transform: rotate(90deg); padding: 0; }
+}
+
+/* ===== Heatmap ===== */
+.heatmap {
+  display: grid;
+  grid-template-columns: 40px repeat(24, 1fr);
+  gap: 2px;
+  margin: 8px 0;
+}
+.heatmap .hm-corner {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text-mute);
+  text-align: center;
+}
+.heatmap .hm-hour {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  color: var(--text-mute);
+  text-align: center;
+  padding: 3px 0;
+}
+.heatmap .hm-day {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+}
+.heatmap .hm-day.weekend { color: var(--accent); }
+.heatmap .hm-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid transparent;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.1s;
+  min-height: 18px;
+}
+.heatmap .hm-cell:hover {
+  transform: scale(1.4);
+  z-index: 5;
+  border-color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-mute);
+}
+.heatmap-legend .scale {
+  display: flex;
+  gap: 2px;
+}
+.heatmap-legend .scale > div {
+  width: 16px;
+  height: 12px;
+  border-radius: 2px;
+}
+.heatmap-insights {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.heatmap-insight {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+}
+.heatmap-insight .lbl {
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 9px;
+  margin-bottom: 4px;
+}
+.heatmap-insight .val {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+.heatmap-insight .val.warn { color: var(--warn); }
+.heatmap-insight .val.crit { color: var(--crit); }
+.heatmap-insight .val.ok { color: var(--ok); }
+
+.heatmap-multi {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.heatmap-multi .hm-block {
+  background: var(--bg-panel-2);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.heatmap-multi .hm-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+@media (max-width: 720px) {
+  .heatmap { grid-template-columns: 30px repeat(24, 1fr); gap: 1px; }
+  .heatmap .hm-hour { font-size: 7px; }
+  .heatmap .hm-day { font-size: 8.5px; padding-right: 4px; }
+  .heatmap-insights { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo-mark">BCH</div>
+    <div class="title-block">
+      <div class="eyebrow">BANCO DE CHILE · EDIFICIO EL BOSQUE</div>
+      <h1>Sala de Máquinas <span class="subtitle">— Cooling Plant</span></h1>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="period-picker-global" id="global-period-picker">
+      <button data-period="today" onclick="setGlobalPeriod(this)">Hoy</button>
+      <button data-period="7d" onclick="setGlobalPeriod(this)">7 días</button>
+      <button data-period="30d" class="active" onclick="setGlobalPeriod(this)">30 días</button>
+      <button data-period="1y" onclick="setGlobalPeriod(this)">1 año</button>
+      <button data-period="custom" onclick="openDateRange(this)" id="custom-period-btn">Personalizado</button>
+    </div>
+    <div id="header-alarm-badge" style="display:none;" onclick="goToOps()" title="Click para ver detalle">
+      <span class="alarm-pulse"></span>
+      <span id="alarm-badge-count">0</span>
+      <span class="alarm-badge-label">alarmas</span>
+    </div>
+    <div class="live-indicator"><span class="live-dot"></span> LIVE</div>
+    <div class="timestamp" id="header-timestamp">12 may 2026 · 14:32 CLT</div>
+  </div>
+</div>
+
+<!-- Date Range Picker Modal -->
+<div id="daterange-modal" style="display:none;">
+  <div class="daterange-backdrop" onclick="closeDateRange()"></div>
+  <div class="daterange-content">
+    <div class="daterange-header">
+      <span>Seleccionar rango personalizado</span>
+      <button onclick="closeDateRange()" class="daterange-close">×</button>
+    </div>
+    <div class="daterange-body">
+      <div class="daterange-presets">
+        <button onclick="applyPreset('yesterday')">Ayer</button>
+        <button onclick="applyPreset('lastWeek')">Semana pasada</button>
+        <button onclick="applyPreset('lastMonth')">Mes pasado</button>
+        <button onclick="applyPreset('q1')">Q1 2026</button>
+        <button onclick="applyPreset('q2')">Q2 2026</button>
+      </div>
+      <div class="daterange-inputs">
+        <div class="daterange-field">
+          <label>Desde</label>
+          <input type="date" id="dr-from" value="2026-04-12" />
+        </div>
+        <div class="daterange-field">
+          <label>Hasta</label>
+          <input type="date" id="dr-to" value="2026-05-12" />
+        </div>
+      </div>
+      <div class="daterange-footer">
+        <button onclick="closeDateRange()" class="dr-btn dr-cancel">Cancelar</button>
+        <button onclick="applyDateRange()" class="dr-btn dr-apply">Aplicar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TABS ===================== -->
+<div class="tabs">
+  <div class="tab active" onclick="setTab('overview', this)">Overview</div>
+  <div class="tab" onclick="setTab('produccion', this)">Producción de Frío <span class="tab-count">11</span></div>
+  <div class="tab" onclick="setTab('distribucion', this)">Distribución <span class="tab-count">3</span></div>
+  <div class="tab" onclick="setTab('ops', this)">Operación · Alarmas <span class="tab-count" style="background:rgba(239,68,68,0.2);color:var(--crit);">3</span></div>
+</div>
+
+<!-- =======================================================
+     ==================== OVERVIEW =========================
+     ======================================================= -->
+<div class="tab-content active" id="tab-overview">
+
+  <!-- Strip alarmas (visible si hay alarmas activas) -->
+  <div class="overview-alarm-strip" id="overview-alarm-strip" onclick="goToOps()">
+    <div class="icon">!</div>
+    <div class="body">
+      <div class="title-line">
+        <span id="overview-alarm-count">3</span> condiciones inadecuadas activas
+      </div>
+      <div class="sub-line" id="overview-alarm-summary">1 crítica · 2 warnings — click para ver detalle</div>
+    </div>
+    <div class="arrow">→</div>
+  </div>
+
+  <!-- KPIs reales -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+
+    <!-- ΔT Chillers dual -->
+    <div class="kpi ok" id="kpi-dt-chiller">
+      <div class="kpi-label"><span class="tip" data-tip="ΔT CHILLERS
+Diferencia de temperatura entre retorno e impulsión del agua helada.
+
+Promedio: media del período evaluado solo cuando hay al menos una bomba CP en ON.
+Compliance: % del tiempo en que ΔT estuvo dentro de la banda óptima.
+
+Banda óptima: 5–7 °C
+Warning: 3–5 °C
+Crítico: < 3 °C">ΔT Chillers</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big ok val-avg">6.3</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">°C</span>
+          <span class="sub">Promedio</span>
+        </div>
+        <div class="col">
+          <span class="big ok val-comp">86</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">Compliance</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Banda 5–7 °C</span>
+        <span class="delta pos">▲ +0.2 °C vs 30d ant.</span>
+      </div>
+    </div>
+
+    <!-- ΔT Torres dual -->
+    <div class="kpi warn" id="kpi-dt-torre">
+      <div class="kpi-label"><span class="tip" data-tip="ΔT TORRES
+Diferencia de temperatura entre entrada y salida del agua de condensador en las torres.
+
+Promedio: media del período evaluado solo cuando la torre está ON y hay flujo de condensador.
+Compliance: % del tiempo en que ΔT estuvo dentro de la banda óptima.
+
+Banda óptima: 4–6 °C
+Warning: 2–4 °C
+Crítico: < 2 °C">ΔT Torres</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big warn val-avg">3.5</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">°C</span>
+          <span class="sub">Promedio</span>
+        </div>
+        <div class="col">
+          <span class="big warn val-comp">71</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">Compliance</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Banda 4–6 °C</span>
+        <span class="delta neg">▼ −0.4 °C vs 30d ant.</span>
+      </div>
+    </div>
+
+    <!-- Operational Compliance -->
+    <div class="kpi ok" id="kpi-op-comp">
+      <div class="kpi-label"><span class="tip" data-tip="OPERATIONAL COMPLIANCE
+Score ponderado de cumplimiento de secuencias operativas entre chillers, bombas y torres.
+
+Pesos:
+• Chiller→CP: 25% (crítica)
+• Chiller→CC: 20% (crítica)
+• Chiller→Torre: 20% (crítica)
+• CP→CS: 15% (alta)
+• Torre→CC: 10% (alta)
+• System OFF: 10% (alta)
+
+Rango óptimo: ≥ 95%">Operational Compliance</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big ok val-avg">94</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">Score</span>
+        </div>
+        <div class="col">
+          <span class="big ok val-comp">5/6</span>
+          <span class="sub">Sec. OK</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Objetivo ≥ 95%</span>
+        <span class="delta pos">▲ +2% vs 30d ant.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matriz Diagnóstica + Secuencias -->
+  <div class="grid">
+    <div class="panel col-7">
+      <div class="panel-header">
+        <div class="panel-title"><span class="accent-dot" style="background:#34d399"></span><span class="tip" data-tip="MATRIZ DIAGNÓSTICA
+% del tiempo del período en cada cuadrante según el estado simultáneo de ΔT Chiller y ΔT Torre.
+
+Permite saber el origen probable de problemas:
+• System Optimal: ambos ΔT en banda óptima
+• Hydraulic Issue: Chiller ΔT bajo, Torre OK (problema hidráulico CHW)
+• Rejection Issue: Chiller OK, Torre ΔT bajo (problema rechazo térmico)
+• Chiller Issue: ambos ΔT bajos (problema combinado / carga baja)">Matriz Diagnóstica</span></div>
+        <div class="panel-meta">% tiempo en cada cuadrante</div>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;">
+        <div class="diag-matrix" style="width:340px;">
+          <div></div>
+          <div class="diag-label-h">Chiller ΔT OK</div>
+          <div class="diag-label-h">Chiller ΔT Low</div>
+          <div class="diag-label-v">Torre OK</div>
+          <div class="diag-cell optimal active" id="mtx-optimal" onclick="filterHeatmapByQuadrant('optimal', this)">
+            <div>System Optimal</div><div class="pct">67%</div>
+          </div>
+          <div class="diag-cell hydraulic" id="mtx-hydraulic" onclick="filterHeatmapByQuadrant('hydraulic', this)">
+            <div>Hydraulic Issue</div><div class="pct">10%</div>
+          </div>
+          <div class="diag-label-v">Torre Low</div>
+          <div class="diag-cell rejection" id="mtx-rejection" onclick="filterHeatmapByQuadrant('rejection', this)">
+            <div>Rejection Issue</div><div class="pct">8%</div>
+          </div>
+          <div class="diag-cell chiller" id="mtx-chiller" onclick="filterHeatmapByQuadrant('chiller', this)">
+            <div>Chiller Issue</div><div class="pct">15%</div>
+          </div>
+        </div>
+        <div style="font-size:12px; color:var(--text-dim); line-height:1.6;">
+          <div style="margin-bottom:10px;">
+            <span style="color:var(--ok);font-weight:700;font-size:14px;" id="mtx-optimal-text">67%</span> en estado óptimo.
+          </div>
+          <div style="font-size:11px;line-height:1.55;">
+            El 33% restante se concentra en <span style="color:var(--crit);">problemas combinados de chiller (15%)</span>, lo que sugiere revisar carga térmica del edificio o flujo del condensador.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sequences -->
+    <div class="panel col-5">
+      <div class="panel-header">
+        <div class="panel-title"><span class="accent-dot" style="background:#4ea1ff"></span>Secuencias Operativas</div>
+        <div class="panel-meta">% tiempo cumplida</div>
+      </div>
+      <div class="seq-list">
+        <div class="seq-row crit">
+          <span class="seq-id">01</span>
+          <span class="seq-name tip" data-tip="CHILLER → BOMBA CP
+Si el chiller está ON, debe haber al menos una bomba CP (Primaria) en ON.
+
+POR QUÉ: garantiza circulación de agua helada por el evaporador. Sin flujo, el chiller puede dispararse o dañarse.
+
+CRITICIDAD: 🔴 Crítica">Chiller → Bomba CP</span>
+          <span class="seq-pct ok" id="seq-s1">100%</span>
+        </div>
+        <div class="seq-row crit">
+          <span class="seq-id">02</span>
+          <span class="seq-name tip" data-tip="CHILLER → BOMBA CC
+Si el chiller está ON, debe haber al menos una bomba CC (Condensador) en ON.
+
+POR QUÉ: permite rechazo de calor del condensador hacia la torre. Sin flujo de condensador, el sistema sobrecalienta y se vuelve ineficiente o se detiene.
+
+CRITICIDAD: 🔴 Crítica">Chiller → Bomba CC</span>
+          <span class="seq-pct ok" id="seq-s2">99%</span>
+        </div>
+        <div class="seq-row crit">
+          <span class="seq-id">03</span>
+          <span class="seq-name tip" data-tip="CHILLER → TORRE
+Si el chiller está ON, debe haber al menos una torre en ON.
+
+POR QUÉ: necesario para disipar el calor del sistema al ambiente. Sin torres, no hay rechazo térmico.
+
+CRITICIDAD: 🔴 Crítica">Chiller → Torre</span>
+          <span class="seq-pct warn" id="seq-s3">94%</span>
+        </div>
+        <div class="seq-row high">
+          <span class="seq-id">04</span>
+          <span class="seq-name tip" data-tip="CP → CS
+Si hay bomba CP (Primaria) en ON, debe haber al menos una CS (Secundaria) en ON.
+
+POR QUÉ: garantiza que el agua helada producida se distribuya al edificio. De lo contrario, se produce frío que no llega a destino.
+
+CRITICIDAD: 🟡 Alta">CP → CS (distribución)</span>
+          <span class="seq-pct ok" id="seq-s4">98%</span>
+        </div>
+        <div class="seq-row high">
+          <span class="seq-id">05</span>
+          <span class="seq-name tip" data-tip="TORRE → BOMBA CC
+Si hay una torre en ON, debe haber al menos una bomba CC en ON.
+
+POR QUÉ: garantiza circulación de agua por la torre. Una torre operando sin flujo es desperdicio de energía y no cumple su función.
+
+CRITICIDAD: 🟡 Alta">Torre → CC</span>
+          <span class="seq-pct ok" id="seq-s5">100%</span>
+        </div>
+        <div class="seq-row high">
+          <span class="seq-id">06</span>
+          <span class="seq-name tip" data-tip="SYSTEM OFF CONSISTENCY
+Si todos los chillers están OFF, las bombas y torres también deben estar OFF.
+
+POR QUÉ: evita la operación innecesaria de equipos auxiliares cuando no se requiere enfriamiento. Reduce consumo energético.
+
+CRITICIDAD: 🟡 Alta">System OFF Consistency</span>
+          <span class="seq-pct warn" id="seq-s6">87%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evolución mensual -->
+  <div class="section-label">Evolución mensual · últimos 12 meses</div>
+
+  <div class="grid">
+    <div class="panel col-4">
+      <div class="panel-header">
+        <div class="panel-title"><span class="accent-dot"></span>ΔT Chillers prom. mensual</div>
+        <div class="panel-meta">°C · objetivo 5–7</div>
+      </div>
+      <div class="monthly-bars-wrap">
+        <div class="monthly-bars">
+          <div class="bar-col"><span class="bar-value">5.2</span><div class="bar" style="height:55%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">5.4</span><div class="bar" style="height:58%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">5.7</span><div class="bar" style="height:62%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">5.9</span><div class="bar" style="height:65%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">6.0</span><div class="bar" style="height:68%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">6.1</span><div class="bar" style="height:70%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">6.2</span><div class="bar" style="height:72%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">6.3</span><div class="bar" style="height:74%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">6.2</span><div class="bar" style="height:72%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">6.3</span><div class="bar" style="height:75%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">6.4</span><div class="bar" style="height:77%;background:#34d399"></div></div>
+          <div class="bar-col current"><span class="bar-value">6.3</span><div class="bar" style="height:76%;background:#34d399"></div></div>
+        </div>
+      </div>
+      <div class="monthly-axis">
+        <span>Jun</span><span>Jul</span><span>Ago</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dic</span><span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span style="color:var(--text);font-weight:700;">May</span>
+      </div>
+    </div>
+
+    <div class="panel col-4">
+      <div class="panel-header">
+        <div class="panel-title"><span class="accent-dot" style="background:#a3e635"></span>ΔT Torres prom. mensual</div>
+        <div class="panel-meta">°C · objetivo 4–6</div>
+      </div>
+      <div class="monthly-bars-wrap">
+        <div class="monthly-bars">
+          <div class="bar-col"><span class="bar-value">4.8</span><div class="bar" style="height:80%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">4.5</span><div class="bar" style="height:75%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">4.2</span><div class="bar" style="height:70%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">4.0</span><div class="bar" style="height:67%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">3.8</span><div class="bar" style="height:63%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">3.7</span><div class="bar" style="height:62%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">3.9</span><div class="bar" style="height:65%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">4.1</span><div class="bar" style="height:68%;background:#34d399"></div></div>
+          <div class="bar-col"><span class="bar-value">3.9</span><div class="bar" style="height:65%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">3.7</span><div class="bar" style="height:62%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">3.6</span><div class="bar" style="height:60%;background:#f59e0b"></div></div>
+          <div class="bar-col current"><span class="bar-value">3.5</span><div class="bar" style="height:58%;background:#f59e0b"></div></div>
+        </div>
+      </div>
+      <div class="monthly-axis">
+        <span>Jun</span><span>Jul</span><span>Ago</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dic</span><span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span style="color:var(--text);font-weight:700;">May</span>
+      </div>
+    </div>
+
+    <div class="panel col-4">
+      <div class="panel-header">
+        <div class="panel-title"><span class="accent-dot" style="background:#4ea1ff"></span>Op. Compliance mensual</div>
+        <div class="panel-meta">% · objetivo ≥ 95</div>
+      </div>
+      <div class="monthly-bars-wrap">
+        <div class="monthly-bars">
+          <div class="bar-col"><span class="bar-value">78</span><div class="bar" style="height:78%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">82</span><div class="bar" style="height:82%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">85</span><div class="bar" style="height:85%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">88</span><div class="bar" style="height:88%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">90</span><div class="bar" style="height:90%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">92</span><div class="bar" style="height:92%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">91</span><div class="bar" style="height:91%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">93</span><div class="bar" style="height:93%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">90</span><div class="bar" style="height:90%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">92</span><div class="bar" style="height:92%;background:#f59e0b"></div></div>
+          <div class="bar-col"><span class="bar-value">95</span><div class="bar" style="height:95%;background:#34d399"></div></div>
+          <div class="bar-col current"><span class="bar-value">94</span><div class="bar" style="height:94%;background:#34d399"></div></div>
+        </div>
+      </div>
+      <div class="monthly-axis">
+        <span>Jun</span><span>Jul</span><span>Ago</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dic</span><span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span style="color:var(--text);font-weight:700;">May</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Heatmap de uso de la planta -->
+  <div class="section-label">Patrón de operación · día × hora</div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title"><span class="accent-dot" style="background:#34d399"></span><span class="tip" data-tip="HEATMAP · PLANTA ACTIVA
+Muestra el % del tiempo (en cada combinación día×hora) que la planta operó con al menos un chiller en ON.
+
+Permite detectar:
+• Si la planta opera fuera de horario laboral
+• Diferencias entre días de semana y fines de semana
+• Horas pico de operación
+• Anomalías (operación cuando no debería)
+
+Color verde más intenso = mayor uso.">Heatmap · planta activa</span></div>
+      <div class="panel-meta">
+        % del tiempo con al menos 1 chiller en ON
+        <span class="freshness">· actualizado hace 5s</span>
+        <button onclick="toggleHeatmapNumbers('overview-heatmap', this)" style="margin-left:12px;background:var(--bg-panel-2);border:1px solid var(--border);color:var(--text-dim);font-family:'Manrope',sans-serif;font-size:10px;padding:4px 9px;border-radius:3px;cursor:pointer;">Mostrar números</button>
+      </div>
+    </div>
+    <div class="heatmap" id="overview-heatmap"></div>
+    <div class="heatmap-legend">
+      <span>0%</span>
+      <div class="scale">
+        <div style="background:rgba(52,211,153,0.05)" title="0-20%"></div>
+        <div style="background:rgba(52,211,153,0.2)" title="20-40%"></div>
+        <div style="background:rgba(52,211,153,0.4)" title="40-60%"></div>
+        <div style="background:rgba(52,211,153,0.6)" title="60-80%"></div>
+        <div style="background:rgba(52,211,153,0.85)" title="80-95%"></div>
+        <div style="background:#34d399" title="95-100%"></div>
+      </div>
+      <span>100%</span>
+      <span style="margin-left:auto;color:var(--text-mute);">Hover sobre celda para detalle</span>
+    </div>
+    <div class="heatmap-insights" id="overview-heatmap-insights"></div>
+  </div>
+</div>
+
+<!-- =======================================================
+     ============== PRODUCCIÓN DE FRÍO ======================
+     ======================================================= -->
+<div class="tab-content" id="tab-produccion">
+
+  <!-- Hint banner -->
+  <div class="hint-banner">
+    <span class="ic">ⓘ</span>
+    <span>Click en una fila para ver detalle. <kbd>Ctrl</kbd>+click para comparar varios assets. Click en separador de grupo para comparar todo el grupo.</span>
+  </div>
+
+  <!-- KPIs del dominio Producción -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="kpi ok" id="kpi-prod-dtchw">
+      <div class="kpi-label"><span class="tip" data-tip="ΔT CHILLERS
+Promedio de Retorno − Impulsión, evaluado solo cuando hay al menos una bomba CP en ON.
+Compliance: % del tiempo dentro de la banda 5–7 °C.">ΔT Chillers</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big ok val-avg">6.3</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">°C</span>
+          <span class="sub">Promedio</span>
+        </div>
+        <div class="col">
+          <span class="big ok val-comp">86</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">Compliance</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Banda 5–7 °C</span>
+        <span class="delta pos">▲ +0.2 vs período ant.</span>
+      </div>
+    </div>
+
+    <div class="kpi warn" id="kpi-prod-dttorre">
+      <div class="kpi-label"><span class="tip" data-tip="ΔT TORRES
+Promedio de Entrada − Salida, evaluado solo cuando la torre está ON y hay flujo de condensador.
+Compliance: % del tiempo dentro de la banda 4–6 °C.">ΔT Torres</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big warn val-avg">3.5</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">°C</span>
+          <span class="sub">Promedio</span>
+        </div>
+        <div class="col">
+          <span class="big warn val-comp">71</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">Compliance</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Banda 4–6 °C</span>
+        <span class="delta neg">▼ −0.4 vs período ant.</span>
+      </div>
+    </div>
+
+    <div class="kpi ok" id="kpi-prod-horas">
+      <div class="kpi-label"><span class="tip" data-tip="HORAS DE OPERACIÓN
+Suma de horas de operación de todos los chillers del período.
+Indica nivel de uso de la planta.">Horas op. planta</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big ok val-avg">624</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">h</span>
+          <span class="sub">Combinado</span>
+        </div>
+        <div class="col">
+          <span class="big ok val-comp">87</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">del período</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span class="period-context">30 días · 720h máx</span>
+        <span class="delta pos">▲ +24h vs período ant.</span>
+      </div>
+    </div>
+
+    <div class="kpi warn" id="kpi-prod-manual">
+      <div class="kpi-label"><span class="tip" data-tip="EQUIPOS EN MANUAL
+Equipos del ciclo de producción actualmente en modo MANUAL.">Equipos en MANUAL</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big warn val-avg">2</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">/11</span>
+          <span class="sub">Actual</span>
+        </div>
+        <div class="col">
+          <span class="big warn val-comp">91</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">Auto en período</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>BBA 2 CC · TE 2</span>
+        <span class="delta neg">▼ −3% vs período ant.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flow diagram -->
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-header">
+      <div class="panel-title"><span class="accent-dot"></span>Ciclo de producción · flujo</div>
+      <div class="panel-meta">click en un bloque para filtrar la tabla · doble click para ver todos en gráfico</div>
+    </div>
+    <div class="flow-diagram">
+      <div class="flow-block" data-filter="cp" onclick="filterTable('cp', this)" ondblclick="selectGroup('cp')">
+        <span class="fb-name">Bombas CP</span>
+        <div class="fb-state">
+          <span class="fb-count">2</span><span class="fb-total">/3 ON</span>
+        </div>
+        <span class="fb-status">Primario · CHW</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-block" data-filter="chiller" onclick="filterTable('chiller', this)" ondblclick="selectGroup('chiller')">
+        <span class="fb-name">Chillers</span>
+        <div class="fb-state">
+          <span class="fb-count">1</span><span class="fb-total">/2 ON</span>
+        </div>
+        <span class="fb-status">ΔT 6.4 °C</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-block" data-filter="cc" onclick="filterTable('cc', this)" ondblclick="selectGroup('cc')">
+        <span class="fb-name">Bombas CC</span>
+        <div class="fb-state">
+          <span class="fb-count">2</span><span class="fb-total">/3 ON</span>
+        </div>
+        <span class="fb-status crit">1 en FAULT</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-block" data-filter="torre" onclick="filterTable('torre', this)" ondblclick="selectGroup('torre')">
+        <span class="fb-name">Torres</span>
+        <div class="fb-state">
+          <span class="fb-count">2</span><span class="fb-total">/2 ON</span>
+        </div>
+        <span class="fb-status warn">T2 baja ΔT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla unificada de assets -->
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="accent-dot"></span>
+        Assets del ciclo de producción
+        <span class="table-filter-active" id="filter-indicator" style="display:none;" onclick="clearFilter()">
+          <span id="filter-name">filtro</span> <span class="x">×</span>
+        </span>
+      </div>
+      <div class="panel-meta">click en fila = seleccionar · ctrl/cmd+click = agregar al gráfico · click en grupo = todos</div>
+    </div>
+    <table class="asset-table" id="produccion-table">
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th>Modo</th>
+          <th style="text-align:right;"><span class="tip" data-tip="MÉTRICA CLAVE
+Valor más relevante del asset en el período seleccionado.
+• Chillers/Torres: ΔT promedio
+• Bombas: % tiempo ON o estado de falla
+
+Se actualiza según el período del toggle global.">Métrica · <span class="period-label">30d</span></span></th>
+          <th style="text-align:right;"><span class="period-context">Horas <span class="period-label">30d</span></span></th>
+          <th style="text-align:right;"><span class="period-context">Comp. <span class="period-label">30d</span></span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="group-sep" data-group="chiller" onclick="selectGroup('chiller')" style="cursor:pointer;"><td colspan="7">Producción · Chillers <span class="count">(2) — click para comparar</span></td></tr>
+        <tr data-asset-id="chiller_1" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;\u0394T 6.5 \u00b0C&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;96 h&quot;, &quot;c&quot;: &quot;90%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;\u0394T 6.4 \u00b0C&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;412 h&quot;, &quot;c&quot;: &quot;88%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;\u0394T 6.0 \u00b0C&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;4920 h&quot;, &quot;c&quot;: &quot;80%&quot;, &quot;cc&quot;: &quot;ok&quot;}}" data-row-type="chiller" class="selected" onclick="handleAssetClick(event, 'chiller_1', this)">
+          <td class="asset-name"><span class="dot on"></span><div><div>Chiller 1</div><div style="font-size:9.5px;color:var(--text-mute);font-weight:400;margin-top:1px;">Carrier 30HXC · 150 TR</div></div></td>
+          <td><span style="color:var(--text-dim);">Chiller</span></td>
+          <td><span class="status-badge ok">ON</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td style="text-align:right;" class="num ok">ΔT 6.4 °C</td>
+          <td style="text-align:right;" class="num">412 h</td>
+          <td style="text-align:right;" class="num ok">88%</td>
+        </tr>
+        <tr data-asset-id="chiller_2" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;\u2014&quot;, &quot;mc&quot;: &quot;dim&quot;, &quot;h&quot;: &quot;48 h&quot;, &quot;c&quot;: &quot;86%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;\u2014&quot;, &quot;mc&quot;: &quot;dim&quot;, &quot;h&quot;: &quot;212 h&quot;, &quot;c&quot;: &quot;84%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;\u0394T 5.8 \u00b0C&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;2560 h&quot;, &quot;c&quot;: &quot;76%&quot;, &quot;cc&quot;: &quot;ok&quot;}}" data-row-type="chiller" onclick="handleAssetClick(event, 'chiller_2', this)">
+          <td class="asset-name"><span class="dot off"></span><div><div>Chiller 2</div><div style="font-size:9.5px;color:var(--text-mute);font-weight:400;margin-top:1px;">Carrier 30HXC · 150 TR</div></div></td>
+          <td><span style="color:var(--text-dim);">Chiller</span></td>
+          <td><span class="status-badge neutral">OFF</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td style="text-align:right;" class="num dim">—</td>
+          <td style="text-align:right;" class="num">212 h</td>
+          <td style="text-align:right;" class="num ok">84%</td>
+        </tr>
+
+        <tr class="group-sep" data-group="cp" onclick="selectGroup('cp')" style="cursor:pointer;"><td colspan="7">Hidráulica · Bombas Primario (CP) <span class="count">(3) — click para comparar</span></td></tr>
+        <tr data-asset-id="bba_1_cp" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;92% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;128 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;88% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;512 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;82% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;6240 h&quot;, &quot;c&quot;: &quot;99%&quot;, &quot;cc&quot;: &quot;ok&quot;}}" data-row-type="cp" onclick="handleAssetClick(event, 'bba_1_cp', this)">
+          <td class="asset-name"><span class="dot on"></span>BBA 1 CP</td>
+          <td><span style="color:var(--text-dim);">Bomba primario</span></td>
+          <td><span class="status-badge ok">ON</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td style="text-align:right;" class="num dim">—</td>
+          <td style="text-align:right;" class="num">512 h</td>
+          <td style="text-align:right;" class="num ok">100%</td>
+        </tr>
+        <tr data-asset-id="bba_2_cp" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;18% ON&quot;, &quot;mc&quot;: &quot;dim&quot;, &quot;h&quot;: &quot;30 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;23% ON&quot;, &quot;mc&quot;: &quot;dim&quot;, &quot;h&quot;: &quot;128 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;20% ON&quot;, &quot;mc&quot;: &quot;dim&quot;, &quot;h&quot;: &quot;1520 h&quot;, &quot;c&quot;: &quot;99%&quot;, &quot;cc&quot;: &quot;ok&quot;}}" data-row-type="cp" onclick="handleAssetClick(event, 'bba_2_cp', this)">
+          <td class="asset-name"><span class="dot off"></span>BBA 2 CP</td>
+          <td><span style="color:var(--text-dim);">Bomba primario</span></td>
+          <td><span class="status-badge neutral">OFF</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td style="text-align:right;" class="num dim">—</td>
+          <td style="text-align:right;" class="num">128 h</td>
+          <td style="text-align:right;" class="num ok">100%</td>
+        </tr>
+        <tr data-asset-id="bba_3_cp" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;65% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;92 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;58% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;340 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;55% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;4140 h&quot;, &quot;c&quot;: &quot;99%&quot;, &quot;cc&quot;: &quot;ok&quot;}}" data-row-type="cp" onclick="handleAssetClick(event, 'bba_3_cp', this)">
+          <td class="asset-name"><span class="dot on"></span>BBA 3 CP</td>
+          <td><span style="color:var(--text-dim);">Bomba primario</span></td>
+          <td><span class="status-badge ok">ON</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td style="text-align:right;" class="num dim">—</td>
+          <td style="text-align:right;" class="num">340 h</td>
+          <td style="text-align:right;" class="num ok">100%</td>
+        </tr>
+
+        <tr class="group-sep" data-group="cc" onclick="selectGroup('cc')" style="cursor:pointer;"><td colspan="7">Hidráulica · Bombas Condensador (CC) <span class="count">(3) — click para comparar</span></td></tr>
+        <tr data-asset-id="bba_1_cc" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;90% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;120 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;86% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;412 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;80% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;5200 h&quot;, &quot;c&quot;: &quot;99%&quot;, &quot;cc&quot;: &quot;ok&quot;}}" data-row-type="cc" onclick="handleAssetClick(event, 'bba_1_cc', this)">
+          <td class="asset-name"><span class="dot on"></span>BBA 1 CC</td>
+          <td><span style="color:var(--text-dim);">Bomba condensador</span></td>
+          <td><span class="status-badge ok">ON</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td style="text-align:right;" class="num dim">—</td>
+          <td style="text-align:right;" class="num">412 h</td>
+          <td style="text-align:right;" class="num ok">100%</td>
+        </tr>
+        <tr data-asset-id="bba_2_cc" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;FT activo&quot;, &quot;mc&quot;: &quot;crit&quot;, &quot;h&quot;: &quot;32 h&quot;, &quot;c&quot;: &quot;54%&quot;, &quot;cc&quot;: &quot;warn&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;FT activo&quot;, &quot;mc&quot;: &quot;crit&quot;, &quot;h&quot;: &quot;88 h&quot;, &quot;c&quot;: &quot;62%&quot;, &quot;cc&quot;: &quot;warn&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;3 FT eventos&quot;, &quot;mc&quot;: &quot;crit&quot;, &quot;h&quot;: &quot;880 h&quot;, &quot;c&quot;: &quot;78%&quot;, &quot;cc&quot;: &quot;warn&quot;}}" data-row-type="cc" onclick="handleAssetClick(event, 'bba_2_cc', this)">
+          <td class="asset-name"><span class="dot fault"></span>BBA 2 CC</td>
+          <td><span style="color:var(--text-dim);">Bomba condensador</span></td>
+          <td><span class="status-badge crit">FAULT</span></td>
+          <td><span class="status-badge warn">MAN</span></td>
+          <td style="text-align:right;" class="num crit">FT activo</td>
+          <td style="text-align:right;" class="num">88 h</td>
+          <td style="text-align:right;" class="num warn">62%</td>
+        </tr>
+        <tr data-asset-id="bba_3_cc" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;55% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;78 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;50% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;298 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;48% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;3620 h&quot;, &quot;c&quot;: &quot;99%&quot;, &quot;cc&quot;: &quot;ok&quot;}}" data-row-type="cc" onclick="handleAssetClick(event, 'bba_3_cc', this)">
+          <td class="asset-name"><span class="dot on"></span>BBA 3 CC</td>
+          <td><span style="color:var(--text-dim);">Bomba condensador</span></td>
+          <td><span class="status-badge ok">ON</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td style="text-align:right;" class="num dim">—</td>
+          <td style="text-align:right;" class="num">298 h</td>
+          <td style="text-align:right;" class="num ok">100%</td>
+        </tr>
+
+        <tr class="group-sep" data-group="torre" onclick="selectGroup('torre')" style="cursor:pointer;"><td colspan="7">Rechazo Térmico · Torres <span class="count">(2) — click para comparar</span></td></tr>
+        <tr data-asset-id="torre_1" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;\u0394T 3.9 \u00b0C&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;118 h&quot;, &quot;c&quot;: &quot;80%&quot;, &quot;cc&quot;: &quot;warn&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;\u0394T 3.8 \u00b0C&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;498 h&quot;, &quot;c&quot;: &quot;76%&quot;, &quot;cc&quot;: &quot;warn&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;\u0394T 4.0 \u00b0C&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;5980 h&quot;, &quot;c&quot;: &quot;78%&quot;, &quot;cc&quot;: &quot;warn&quot;}}" data-row-type="torre" onclick="handleAssetClick(event, 'torre_1', this)">
+          <td class="asset-name"><span class="dot on"></span><div><div>Torre 1 (TE 1)</div><div style="font-size:9.5px;color:var(--text-mute);font-weight:400;margin-top:1px;">BAC · 200 TR</div></div></td>
+          <td><span style="color:var(--text-dim);">Torre enfriamiento</span></td>
+          <td><span class="status-badge ok">ON</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td style="text-align:right;" class="num ok">ΔT 3.8 °C</td>
+          <td style="text-align:right;" class="num">498 h</td>
+          <td style="text-align:right;" class="num warn">76%</td>
+        </tr>
+        <tr data-asset-id="torre_2" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;\u0394T 3.1 \u00b0C&quot;, &quot;mc&quot;: &quot;warn&quot;, &quot;h&quot;: &quot;76 h&quot;, &quot;c&quot;: &quot;64%&quot;, &quot;cc&quot;: &quot;crit&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;\u0394T 3.1 \u00b0C&quot;, &quot;mc&quot;: &quot;warn&quot;, &quot;h&quot;: &quot;312 h&quot;, &quot;c&quot;: &quot;66%&quot;, &quot;cc&quot;: &quot;crit&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;\u0394T 3.4 \u00b0C&quot;, &quot;mc&quot;: &quot;warn&quot;, &quot;h&quot;: &quot;3740 h&quot;, &quot;c&quot;: &quot;72%&quot;, &quot;cc&quot;: &quot;warn&quot;}}" data-row-type="torre" onclick="handleAssetClick(event, 'torre_2', this)">
+          <td class="asset-name"><span class="dot on"></span><div><div>Torre 2 (TE 2)</div><div style="font-size:9.5px;color:var(--text-mute);font-weight:400;margin-top:1px;">BAC · 200 TR</div></div></td>
+          <td><span style="color:var(--text-dim);">Torre enfriamiento</span></td>
+          <td><span class="status-badge ok">ON</span></td>
+          <td><span class="status-badge warn">MAN</span></td>
+          <td style="text-align:right;" class="num warn">ΔT 3.1 °C</td>
+          <td style="text-align:right;" class="num">312 h</td>
+          <td style="text-align:right;" class="num crit">66%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Asset detail header -->
+  <div class="asset-detail-header">
+    <div class="detail-title">
+      <span class="badge">DETALLE</span>
+      <span id="detail-asset-names">Chiller 1</span>
+      <span style="color:var(--text-mute);font-size:11px;font-weight:400;" id="detail-asset-sub">· producción de frío</span>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button id="clear-selection-btn" onclick="clearAssetSelection()" style="display:none; background:var(--bg-panel-2); border:1px solid var(--border); color:var(--text-dim); font-family:'Manrope',sans-serif; font-size:11px; padding:6px 12px; border-radius:4px; cursor:pointer;">× Limpiar selección</button>
+    </div>
+  </div>
+
+  <!-- Mini KPIs del asset -->
+  <div class="mini-kpi-row" id="asset-mini-kpis">
+    <!-- Renderizado dinámicamente por JS -->
+  </div>
+
+  <!-- Telemetría del asset (dynamic) -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title"><span class="accent-dot"></span><span id="telemetry-title">Telemetría · Chiller 1</span></div>
+      <div class="panel-meta" id="telemetry-period">últimas 24h · muestras 1 min <span class="freshness">· actualizado hace 5s</span></div>
+    </div>
+    <div class="chart-wrap" id="telemetry-chart">
+      <!-- Renderizado dinámicamente por JS -->
+    </div>
+    <div class="chart-legend" id="telemetry-legend">
+      <!-- Renderizado dinámicamente por JS -->
+    </div>
+  </div>
+
+  <!-- Heatmap del asset -->
+  <div class="panel" style="margin-top:14px;">
+    <div class="panel-header">
+      <div class="panel-title"><span class="accent-dot" style="background:#34d399"></span><span class="tip" data-tip="HEATMAP DEL ASSET
+Muestra cuándo el asset seleccionado estuvo en ON, agregado por día de la semana × hora del día.
+
+Para cada hora-día, calcula el % de tiempo del período en que el asset estuvo ON.
+
+Útil para:
+• Validar cronograma de operación
+• Detectar uso fuera de horario
+• Comparar patrones entre assets similares">Patrón de uso · día × hora</span></div>
+      <div class="panel-meta" id="heatmap-asset-meta">
+        % del tiempo en ON · agregado por hora-día
+        <button onclick="toggleHeatmapNumbers('produccion-heatmap', this)" style="margin-left:12px;background:var(--bg-panel-2);border:1px solid var(--border);color:var(--text-dim);font-family:'Manrope',sans-serif;font-size:10px;padding:4px 9px;border-radius:3px;cursor:pointer;">Mostrar números</button>
+      </div>
+    </div>
+    <div id="produccion-heatmap"></div>
+    <div class="heatmap-legend">
+      <span>0%</span>
+      <div class="scale">
+        <div style="background:rgba(52,211,153,0.05)"></div>
+        <div style="background:rgba(52,211,153,0.2)"></div>
+        <div style="background:rgba(52,211,153,0.4)"></div>
+        <div style="background:rgba(52,211,153,0.6)"></div>
+        <div style="background:rgba(52,211,153,0.85)"></div>
+        <div style="background:#34d399"></div>
+      </div>
+      <span>100%</span>
+    </div>
+  </div>
+</div>
+
+<!-- =======================================================
+     ================== DISTRIBUCIÓN =========================
+     ======================================================= -->
+<div class="tab-content" id="tab-distribucion">
+
+  <div class="hint-banner">
+    <span class="ic">ⓘ</span>
+    <span>Click en una fila para ver detalle. <kbd>Ctrl</kbd>+click para comparar varias bombas. Click en separador de grupo para comparar todas.</span>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="kpi ok">
+      <div class="kpi-label"><span class="tip" data-tip="BOMBAS CS OPERANDO
+Cantidad de bombas del circuito secundario (distribución al edificio) actualmente en ON.">Bombas operando</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big ok">2</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">/3</span>
+          <span class="sub">Actual</span>
+        </div>
+        <div class="col">
+          <span class="big ok">2.1</span>
+          <span class="sub">Promedio período</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Demanda normal</span>
+        <span class="delta">≈ similar a período ant.</span>
+      </div>
+    </div>
+
+    <div class="kpi ok">
+      <div class="kpi-label"><span class="tip" data-tip="DISPONIBILIDAD CS
+% del tiempo con al menos una bomba secundaria en ON cuando hay chillers operando.">Disponibilidad</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big ok">99.7</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">Período</span>
+        </div>
+        <div class="col">
+          <span class="big ok">100</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">Últimos 24h</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Objetivo ≥ 99%</span>
+        <span class="delta pos">▲ +0.3% vs período ant.</span>
+      </div>
+    </div>
+
+    <div class="kpi ok">
+      <div class="kpi-label"><span class="tip" data-tip="BALANCE DE USO
+Diferencia de horas operadas entre la bomba más y menos usada del circuito CS.
+Un valor alto indica falta de rotación.">Balance de uso</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big ok">428</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">h</span>
+          <span class="sub">Diferencia</span>
+        </div>
+        <div class="col">
+          <span class="big ok">CS1</span>
+          <span class="sub">Más usada</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Considerar rotación</span>
+        <span class="delta">CS1: 524h · CS3: 96h</span>
+      </div>
+    </div>
+
+    <div class="kpi ok">
+      <div class="kpi-label"><span class="tip" data-tip="EQUIPOS EN MANUAL
+Bombas CS actualmente en modo MANUAL.">Auto Mode</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big ok">3</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">/3</span>
+          <span class="sub">en AUTO</span>
+        </div>
+        <div class="col">
+          <span class="big ok">100</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">tiempo período</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Sin equipos en MANUAL</span>
+        <span class="delta pos">— estable</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de bombas CS -->
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-header">
+      <div class="panel-title"><span class="accent-dot" style="background:#6ec1ff"></span>Bombas Secundario · distribución al edificio</div>
+      <div class="panel-meta">click en fila = seleccionar · ctrl+click = comparar</div>
+    </div>
+    <table class="asset-table" id="distribucion-table">
+      <thead>
+        <tr>
+          <th>Bomba</th>
+          <th>Estado</th>
+          <th>Modo</th>
+          <th>Falla térmica</th>
+          <th style="text-align:right;">Horas período</th>
+          <th style="text-align:right;">% del uso</th>
+          <th style="text-align:right;">% AUTO período</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="group-sep" data-group="cs" onclick="selectGroup('cs')" style="cursor:pointer;"><td colspan="7">Distribución · Bombas Secundario (CS) <span class="count">(3) — click para comparar</span></td></tr>
+        <tr data-asset-id="bba_1_cs" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;96% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;128 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;93% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;524 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;88% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;6420 h&quot;, &quot;c&quot;: &quot;99%&quot;, &quot;cc&quot;: &quot;ok&quot;}}" data-row-type="cs" class="selected" onclick="handleAssetClick(event, 'bba_1_cs', this)">
+          <td class="asset-name"><span class="dot on"></span>BBA 1 CS</td>
+          <td><span class="status-badge ok">ON</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td><span class="status-badge ok">OK</span></td>
+          <td style="text-align:right;" class="num">524 h</td>
+          <td style="text-align:right;" class="num warn">56%</td>
+          <td style="text-align:right;" class="num ok">100%</td>
+        </tr>
+        <tr data-asset-id="bba_2_cs" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;58% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;78 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;54% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;320 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;52% ON&quot;, &quot;mc&quot;: &quot;ok&quot;, &quot;h&quot;: &quot;3920 h&quot;, &quot;c&quot;: &quot;99%&quot;, &quot;cc&quot;: &quot;ok&quot;}}" data-row-type="cs" onclick="handleAssetClick(event, 'bba_2_cs', this)">
+          <td class="asset-name"><span class="dot on"></span>BBA 2 CS</td>
+          <td><span class="status-badge ok">ON</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td><span class="status-badge ok">OK</span></td>
+          <td style="text-align:right;" class="num">320 h</td>
+          <td style="text-align:right;" class="num ok">34%</td>
+          <td style="text-align:right;" class="num ok">100%</td>
+        </tr>
+        <tr data-asset-id="bba_3_cs" data-row-values="{&quot;7d&quot;: {&quot;m&quot;: &quot;12% ON&quot;, &quot;mc&quot;: &quot;dim&quot;, &quot;h&quot;: &quot;22 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;30d&quot;: {&quot;m&quot;: &quot;16% ON&quot;, &quot;mc&quot;: &quot;dim&quot;, &quot;h&quot;: &quot;96 h&quot;, &quot;c&quot;: &quot;100%&quot;, &quot;cc&quot;: &quot;ok&quot;}, &quot;1y&quot;: {&quot;m&quot;: &quot;18% ON&quot;, &quot;mc&quot;: &quot;dim&quot;, &quot;h&quot;: &quot;1180 h&quot;, &quot;c&quot;: &quot;99%&quot;, &quot;cc&quot;: &quot;ok&quot;}}" data-row-type="cs" onclick="handleAssetClick(event, 'bba_3_cs', this)">
+          <td class="asset-name"><span class="dot off"></span>BBA 3 CS</td>
+          <td><span class="status-badge neutral">OFF</span></td>
+          <td><span class="status-badge ok">AUTO</span></td>
+          <td><span class="status-badge ok">OK</span></td>
+          <td style="text-align:right;" class="num">96 h</td>
+          <td style="text-align:right;" class="num crit">10%</td>
+          <td style="text-align:right;" class="num ok">100%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Asset detail (compartido con el de producción mediante JS) -->
+  <div class="asset-detail-header">
+    <div class="detail-title">
+      <span class="badge" style="background:#6ec1ff;">DETALLE</span>
+      <span id="detail-asset-names-dist">BBA 1 CS</span>
+      <span style="color:var(--text-mute);font-size:11px;font-weight:400;" id="detail-asset-sub-dist">· bomba secundario</span>
+    </div>
+    <div>
+      <button id="clear-selection-btn-dist" onclick="clearAssetSelection('distribucion')" style="display:none; background:var(--bg-panel-2); border:1px solid var(--border); color:var(--text-dim); font-family:'Manrope',sans-serif; font-size:11px; padding:6px 12px; border-radius:4px; cursor:pointer;">× Limpiar selección</button>
+    </div>
+  </div>
+
+  <div class="mini-kpi-row" id="asset-mini-kpis-dist">
+    <!-- Renderizado dinámicamente -->
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title"><span class="accent-dot" style="background:#6ec1ff"></span><span id="telemetry-title-dist">Telemetría · BBA 1 CS</span></div>
+      <div class="panel-meta" id="telemetry-period-dist">últimas 24h · muestras 1 min <span class="freshness">· actualizado hace 5s</span></div>
+    </div>
+    <div class="chart-wrap" id="telemetry-chart-dist" style="height:160px;">
+      <!-- Renderizado dinámicamente -->
+    </div>
+    <div class="chart-legend" id="telemetry-legend-dist">
+      <!-- Renderizado dinámicamente -->
+    </div>
+  </div>
+</div>
+
+
+<!-- =======================================================
+     ============ OPERACIÓN · ALARMAS ======================
+     ======================================================= -->
+<div class="tab-content" id="tab-ops">
+
+  <div class="hint-banner">
+    <span class="ic">ⓘ</span>
+    <span>Panel operativo · alarmas en condición inadecuada AHORA, historial del período, análisis y secuencias.</span>
+  </div>
+
+  <!-- KPI strip -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="kpi crit">
+      <div class="kpi-label"><span class="tip" data-tip="ALARMAS ACTIVAS AHORA
+Cantidad de parámetros en condición inadecuada en este momento.">Alarmas activas</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big crit">3</span>
+          <span class="sub">Activas ahora</span>
+        </div>
+        <div class="col">
+          <span class="big crit">1</span>
+          <span class="sub">Críticas</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>1 crítica · 2 warnings</span>
+        <span class="delta">Última: hace 18 min</span>
+      </div>
+    </div>
+
+    <div class="kpi warn">
+      <div class="kpi-label"><span class="tip" data-tip="EVENTOS DEL PERÍODO
+Cantidad total de alarmas que se levantaron en el período (activas + resueltas).
+Incluye las que ya cerraron.">Eventos del período</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big warn" id="ops-total-events">47</span>
+          <span class="sub">Total · <span class="period-label">30d</span></span>
+        </div>
+        <div class="col">
+          <span class="big warn">12</span>
+          <span class="sub">Críticos</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>44 resueltas · 3 activas</span>
+        <span class="delta neg">▲ +8 vs período ant.</span>
+      </div>
+    </div>
+
+    <div class="kpi warn">
+      <div class="kpi-label"><span class="tip" data-tip="TIEMPO EN FALLA
+% del tiempo total del período en que hubo al menos una alarma activa simultáneamente.">Tiempo en falla</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big warn">14</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">%</span>
+          <span class="sub">del período</span>
+        </div>
+        <div class="col">
+          <span class="big warn">102</span><span style="font-size:13px;color:var(--text-dim);font-weight:500;margin-left:3px;">h</span>
+          <span class="sub">acumuladas</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Duración promedio: 2.1h</span>
+        <span class="delta">Más larga: 14.5h</span>
+      </div>
+    </div>
+
+    <div class="kpi crit">
+      <div class="kpi-label"><span class="tip" data-tip="EQUIPO MÁS PROBLEMÁTICO
+Equipo con más alarmas levantadas en el período.">Equipo top</span></div>
+      <div class="kpi-dual">
+        <div class="col">
+          <span class="big crit" style="font-size:18px;">BBA 2 CC</span>
+          <span class="sub">Más alarmas</span>
+        </div>
+        <div class="col">
+          <span class="big crit">14</span>
+          <span class="sub">Eventos</span>
+        </div>
+      </div>
+      <div class="kpi-band">
+        <span>Bomba condensador</span>
+        <span class="delta">30% del total</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── SECCIÓN 1: ACTIVAS AHORA ───── -->
+  <div class="section-label">Activas ahora</div>
+
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-header">
+      <div class="panel-title"><span class="accent-dot" style="background:#ef4444"></span><span class="tip" data-tip="PARÁMETROS EN CONDICIÓN INADECUADA
+Parámetros que están en condición de falla AHORA mismo según telemetría.
+Cuando la condición desaparece, la alarma pasa automáticamente a estado CLEARED.">Parámetros en condición inadecuada</span></div>
+      <div class="panel-meta">3 activas · <span class="freshness">actualizado hace 5s</span></div>
+    </div>
+    <div class="alarm-list">
+      <div class="alarm crit">
+        <div class="alarm-icon">!</div>
+        <div class="alarm-text">
+          <span class="src">FT BBA 2 CC</span>
+          <span class="descr">Falla térmica en bomba condensador 2</span>
+        </div>
+        <div class="alarm-duration"><span class="lbl">Activa hace</span>02h 14m</div>
+      </div>
+      <div class="alarm warn">
+        <div class="alarm-icon">⚠</div>
+        <div class="alarm-text">
+          <span class="src">ΔT-LOW Torre 2</span>
+          <span class="descr">ΔT Torre 2 bajo banda crítica (3.1 °C &lt; 4 °C)</span>
+        </div>
+        <div class="alarm-duration"><span class="lbl">Activa hace</span>01h 02m</div>
+      </div>
+      <div class="alarm warn">
+        <div class="alarm-icon">M</div>
+        <div class="alarm-text">
+          <span class="src">MANUAL TE 2</span>
+          <span class="descr">Selector torre 2 en MANUAL — automatización deshabilitada</span>
+        </div>
+        <div class="alarm-duration"><span class="lbl">Activa hace</span>00h 18m</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── SECCIÓN 2: ANÁLISIS DEL PERÍODO ───── -->
+  <div class="section-label">Análisis del período</div>
+
+  <div class="grid" style="margin-bottom:14px;">
+    <!-- Top equipos -->
+    <div class="panel col-7">
+      <div class="panel-header">
+        <div class="panel-title"><span class="accent-dot" style="background:#ef4444"></span><span class="tip" data-tip="EQUIPOS MÁS PROBLEMÁTICOS
+Ranking de equipos con más alarmas levantadas en el período.
+Permite identificar dónde concentrar mantenimiento.">Equipos con más alarmas</span></div>
+        <div class="panel-meta"><span class="period-label">30d</span> · top 7</div>
+      </div>
+      <div class="ranking-list">
+        <div class="ranking-row">
+          <span class="ranking-rank">01</span>
+          <div class="ranking-bar-container">
+            <span class="ranking-name">BBA 2 CC <span class="ranking-sub">· bomba condensador</span></span>
+            <div class="ranking-bar"><div class="ranking-bar-fill crit" style="width:100%"></div></div>
+          </div>
+          <div>
+            <div class="ranking-count crit">14</div>
+            <div class="ranking-sub" style="text-align:right;">30%</div>
+          </div>
+        </div>
+        <div class="ranking-row">
+          <span class="ranking-rank">02</span>
+          <div class="ranking-bar-container">
+            <span class="ranking-name">Torre 2 (TE 2) <span class="ranking-sub">· rechazo térmico</span></span>
+            <div class="ranking-bar"><div class="ranking-bar-fill warn" style="width:71%"></div></div>
+          </div>
+          <div>
+            <div class="ranking-count warn">10</div>
+            <div class="ranking-sub" style="text-align:right;">21%</div>
+          </div>
+        </div>
+        <div class="ranking-row">
+          <span class="ranking-rank">03</span>
+          <div class="ranking-bar-container">
+            <span class="ranking-name">Chiller 2 <span class="ranking-sub">· producción</span></span>
+            <div class="ranking-bar"><div class="ranking-bar-fill warn" style="width:50%"></div></div>
+          </div>
+          <div>
+            <div class="ranking-count warn">7</div>
+            <div class="ranking-sub" style="text-align:right;">15%</div>
+          </div>
+        </div>
+        <div class="ranking-row">
+          <span class="ranking-rank">04</span>
+          <div class="ranking-bar-container">
+            <span class="ranking-name">Torre 1 (TE 1) <span class="ranking-sub">· rechazo térmico</span></span>
+            <div class="ranking-bar"><div class="ranking-bar-fill warn" style="width:43%"></div></div>
+          </div>
+          <div>
+            <div class="ranking-count warn">6</div>
+            <div class="ranking-sub" style="text-align:right;">13%</div>
+          </div>
+        </div>
+        <div class="ranking-row">
+          <span class="ranking-rank">05</span>
+          <div class="ranking-bar-container">
+            <span class="ranking-name">BBA 3 CC <span class="ranking-sub">· bomba condensador</span></span>
+            <div class="ranking-bar"><div class="ranking-bar-fill ok" style="width:29%"></div></div>
+          </div>
+          <div>
+            <div class="ranking-count ok">4</div>
+            <div class="ranking-sub" style="text-align:right;">9%</div>
+          </div>
+        </div>
+        <div class="ranking-row">
+          <span class="ranking-rank">06</span>
+          <div class="ranking-bar-container">
+            <span class="ranking-name">Chiller 1 <span class="ranking-sub">· producción</span></span>
+            <div class="ranking-bar"><div class="ranking-bar-fill ok" style="width:21%"></div></div>
+          </div>
+          <div>
+            <div class="ranking-count ok">3</div>
+            <div class="ranking-sub" style="text-align:right;">6%</div>
+          </div>
+        </div>
+        <div class="ranking-row">
+          <span class="ranking-rank">07</span>
+          <div class="ranking-bar-container">
+            <span class="ranking-name">BBA 2 CP <span class="ranking-sub">· bomba primario</span></span>
+            <div class="ranking-bar"><div class="ranking-bar-fill ok" style="width:21%"></div></div>
+          </div>
+          <div>
+            <div class="ranking-count ok">3</div>
+            <div class="ranking-sub" style="text-align:right;">6%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Donut de severidad -->
+    <div class="panel col-5">
+      <div class="panel-header">
+        <div class="panel-title"><span class="accent-dot" style="background:#f59e0b"></span><span class="tip" data-tip="DISTRIBUCIÓN POR SEVERIDAD
+Composición de alarmas del período según nivel de criticidad.
+
+Severidades:
+• CRITICAL: requiere intervención inmediata
+• MAJOR: degradación significativa
+• WARNING: anormalidad menor">Distribución por severidad</span></div>
+        <div class="panel-meta"><span class="period-label">30d</span></div>
+      </div>
+      <div class="donut-container">
+        <div class="donut-svg-wrap">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <!-- CRITICAL 12/47 = 25.5% -->
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#ef4444" stroke-width="20"
+              stroke-dasharray="76.9 301.5" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+            <!-- MAJOR 22/47 = 46.8% -->
+            <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(239,68,68,0.5)" stroke-width="20"
+              stroke-dasharray="141.2 301.5" stroke-dashoffset="-76.9" transform="rotate(-90 60 60)"/>
+            <!-- WARNING 13/47 = 27.7% -->
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#f59e0b" stroke-width="20"
+              stroke-dasharray="83.5 301.5" stroke-dashoffset="-218.1" transform="rotate(-90 60 60)"/>
+          </svg>
+          <div class="donut-center">
+            <div class="big">47</div>
+            <div class="lbl">Eventos</div>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <div class="donut-legend-item">
+            <span class="swatch" style="background:#ef4444;"></span>
+            <span class="name">Critical</span>
+            <span class="count">12 <span style="color:var(--text-mute);">· 26%</span></span>
+          </div>
+          <div class="donut-legend-item">
+            <span class="swatch" style="background:rgba(239,68,68,0.5);"></span>
+            <span class="name">Major</span>
+            <span class="count">22 <span style="color:var(--text-mute);">· 47%</span></span>
+          </div>
+          <div class="donut-legend-item">
+            <span class="swatch" style="background:#f59e0b;"></span>
+            <span class="name">Warning</span>
+            <span class="count">13 <span style="color:var(--text-mute);">· 28%</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Heatmap alarmas -->
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-header">
+      <div class="panel-title"><span class="accent-dot" style="background:#ef4444"></span><span class="tip" data-tip="HEATMAP DE ALARMAS
+Cuándo se levantaron las alarmas en el período, agregado por día×hora.
+
+Permite detectar patrones:
+• ¿Las fallas pasan en horarios específicos?
+• ¿Coinciden con horas pico de operación?
+• ¿Hay días con más eventos?
+
+Color más intenso = más alarmas levantadas en esa franja.">Heatmap · alarmas levantadas por día×hora</span></div>
+      <div class="panel-meta">cantidad de eventos · <span class="period-label">30d</span></div>
+    </div>
+    <div class="heatmap" id="alarms-heatmap"></div>
+    <div class="heatmap-legend">
+      <span>0 eventos</span>
+      <div class="scale">
+        <div style="background:rgba(239,68,68,0.05)"></div>
+        <div style="background:rgba(239,68,68,0.2)"></div>
+        <div style="background:rgba(239,68,68,0.4)"></div>
+        <div style="background:rgba(239,68,68,0.6)"></div>
+        <div style="background:rgba(239,68,68,0.85)"></div>
+        <div style="background:#ef4444"></div>
+      </div>
+      <span>5+ eventos</span>
+    </div>
+  </div>
+
+  <!-- ───── SECCIÓN 3: HISTORIAL ───── -->
+  <div class="section-label">Historial completo</div>
+
+  <div class="panel" style="margin-bottom:14px;">
+    <div class="panel-header">
+      <div class="panel-title"><span class="accent-dot"></span>Historial de alarmas</div>
+      <div class="panel-meta">47 eventos · <span class="period-label">30d</span></div>
+    </div>
+    <table class="alarm-history-table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Equipo</th>
+          <th>Severidad</th>
+          <th>Inicio</th>
+          <th>Cierre</th>
+          <th>Duración</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>FT BBA 2 CC</td>
+          <td class="equip">BBA 2 CC</td>
+          <td><span class="sev-pill critical">CRITICAL</span></td>
+          <td class="ts">12 may · 12:18</td>
+          <td class="ts">—</td>
+          <td class="duration-cell">02h 14m</td>
+          <td><span class="status-pill active">ACTIVE</span></td>
+        </tr>
+        <tr>
+          <td>ΔT-LOW Torre 2</td>
+          <td class="equip">Torre 2</td>
+          <td><span class="sev-pill major">MAJOR</span></td>
+          <td class="ts">12 may · 13:30</td>
+          <td class="ts">—</td>
+          <td class="duration-cell">01h 02m</td>
+          <td><span class="status-pill active">ACTIVE</span></td>
+        </tr>
+        <tr>
+          <td>MANUAL TE 2</td>
+          <td class="equip">Torre 2</td>
+          <td><span class="sev-pill warning">WARNING</span></td>
+          <td class="ts">12 may · 14:14</td>
+          <td class="ts">—</td>
+          <td class="duration-cell">00h 18m</td>
+          <td><span class="status-pill active">ACTIVE</span></td>
+        </tr>
+        <tr>
+          <td>SEQ-FAIL Chiller→Torre</td>
+          <td class="equip">Chiller 1</td>
+          <td><span class="sev-pill critical">CRITICAL</span></td>
+          <td class="ts">11 may · 22:14</td>
+          <td class="ts">11 may · 22:48</td>
+          <td class="duration-cell">00h 34m</td>
+          <td><span class="status-pill cleared">CLEARED</span><span class="ack-badge">ACK</span></td>
+        </tr>
+        <tr>
+          <td>ΔT-LOW Torre 2</td>
+          <td class="equip">Torre 2</td>
+          <td><span class="sev-pill major">MAJOR</span></td>
+          <td class="ts">11 may · 14:22</td>
+          <td class="ts">11 may · 18:55</td>
+          <td class="duration-cell">04h 33m</td>
+          <td><span class="status-pill cleared">CLEARED</span></td>
+        </tr>
+        <tr>
+          <td>FT BBA 2 CC</td>
+          <td class="equip">BBA 2 CC</td>
+          <td><span class="sev-pill critical">CRITICAL</span></td>
+          <td class="ts">10 may · 16:08</td>
+          <td class="ts">10 may · 17:42</td>
+          <td class="duration-cell">01h 34m</td>
+          <td><span class="status-pill cleared">CLEARED</span><span class="ack-badge">ACK</span></td>
+        </tr>
+        <tr>
+          <td>ΔT-LOW Chiller 2</td>
+          <td class="equip">Chiller 2</td>
+          <td><span class="sev-pill major">MAJOR</span></td>
+          <td class="ts">10 may · 11:32</td>
+          <td class="ts">10 may · 12:18</td>
+          <td class="duration-cell">00h 46m</td>
+          <td><span class="status-pill cleared">CLEARED</span></td>
+        </tr>
+        <tr>
+          <td>SEQ-FAIL Chiller→CC</td>
+          <td class="equip">Chiller 1</td>
+          <td><span class="sev-pill critical">CRITICAL</span></td>
+          <td class="ts">09 may · 08:15</td>
+          <td class="ts">09 may · 08:22</td>
+          <td class="duration-cell">00h 07m</td>
+          <td><span class="status-pill cleared">CLEARED</span></td>
+        </tr>
+        <tr>
+          <td>MANUAL BBA 2 CC</td>
+          <td class="equip">BBA 2 CC</td>
+          <td><span class="sev-pill warning">WARNING</span></td>
+          <td class="ts">08 may · 09:30</td>
+          <td class="ts">08 may · 14:12</td>
+          <td class="duration-cell">04h 42m</td>
+          <td><span class="status-pill cleared">CLEARED</span><span class="ack-badge">ACK</span></td>
+        </tr>
+        <tr>
+          <td>ΔT-LOW Torre 1</td>
+          <td class="equip">Torre 1</td>
+          <td><span class="sev-pill major">MAJOR</span></td>
+          <td class="ts">07 may · 13:45</td>
+          <td class="ts">07 may · 16:30</td>
+          <td class="duration-cell">02h 45m</td>
+          <td><span class="status-pill cleared">CLEARED</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="alarm-pagination">
+      <span>Mostrando 1–10 de 47 eventos</span>
+      <div class="pages">
+        <button disabled>‹</button>
+        <button class="active">1</button>
+        <button>2</button>
+        <button>3</button>
+        <button>4</button>
+        <button>5</button>
+        <button>›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── SECCIÓN 4: SECUENCIAS + SELECTORES ───── -->
+  <div class="section-label">Estado de secuencias y modos</div>
+
+  <div class="grid">
+    <div class="panel col-6">
+      <div class="panel-header">
+        <div class="panel-title"><span class="accent-dot" style="background:#4ea1ff"></span><span class="tip" data-tip="SECUENCIAS OPERATIVAS
+% del tiempo en que cada secuencia se cumplió cuando aplicaba.">Secuencias Operativas</span></div>
+        <div class="panel-meta"><span class="period-label">30 días</span></div>
+      </div>
+      <div class="seq-list">
+        <div class="seq-row crit">
+          <span class="seq-id">01</span>
+          <span class="seq-name tip" data-tip="CHILLER → BOMBA CP
+Si el chiller está ON, debe haber al menos una bomba CP en ON.
+Garantiza circulación de agua helada por el evaporador.
+CRITICIDAD: 🔴 Crítica">Chiller → Bomba CP</span>
+          <span class="seq-pct ok" id="seq-ops-s1">100%</span>
+        </div>
+        <div class="seq-row crit">
+          <span class="seq-id">02</span>
+          <span class="seq-name tip" data-tip="CHILLER → BOMBA CC
+Si el chiller está ON, debe haber al menos una bomba CC en ON.
+Permite rechazo de calor del condensador hacia la torre.
+CRITICIDAD: 🔴 Crítica">Chiller → Bomba CC</span>
+          <span class="seq-pct ok" id="seq-ops-s2">99%</span>
+        </div>
+        <div class="seq-row crit">
+          <span class="seq-id">03</span>
+          <span class="seq-name tip" data-tip="CHILLER → TORRE
+Si el chiller está ON, debe haber al menos una torre en ON.
+Necesario para disipar el calor del sistema al ambiente.
+CRITICIDAD: 🔴 Crítica">Chiller → Torre</span>
+          <span class="seq-pct warn" id="seq-ops-s3">94%</span>
+        </div>
+        <div class="seq-row high">
+          <span class="seq-id">04</span>
+          <span class="seq-name tip" data-tip="CP → CS
+Si hay bomba CP en ON, debe haber al menos una CS en ON.
+Garantiza que el agua helada se distribuya al edificio.
+CRITICIDAD: 🟡 Alta">CP → CS (distribución)</span>
+          <span class="seq-pct ok" id="seq-ops-s4">98%</span>
+        </div>
+        <div class="seq-row high">
+          <span class="seq-id">05</span>
+          <span class="seq-name tip" data-tip="TORRE → BOMBA CC
+Si hay una torre en ON, debe haber al menos una bomba CC en ON.
+Garantiza circulación de agua por la torre.
+CRITICIDAD: 🟡 Alta">Torre → CC</span>
+          <span class="seq-pct ok" id="seq-ops-s5">100%</span>
+        </div>
+        <div class="seq-row high">
+          <span class="seq-id">06</span>
+          <span class="seq-name tip" data-tip="SYSTEM OFF CONSISTENCY
+Si todos los chillers están OFF, las bombas y torres también deben estar OFF.
+Evita la operación innecesaria de equipos auxiliares.
+CRITICIDAD: 🟡 Alta">System OFF Consistency</span>
+          <span class="seq-pct warn" id="seq-ops-s6">87%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel col-6">
+      <div class="panel-header">
+        <div class="panel-title"><span class="accent-dot" style="background:#f59e0b"></span><span class="tip" data-tip="SELECTORES MANUAL/AUTOMÁTICO
+Estado actual de cada equipo: AUTO (el BMS lo controla) o MANUAL (forzado localmente).
+Equipos en MANUAL no responden a las secuencias automáticas del sistema.">Selectores Manual/Automático</span></div>
+        <div class="panel-meta">estado actual · 11/13 en AUTO <span class="freshness">· en vivo</span></div>
+      </div>
+      <div class="ma-grid">
+        <div class="ma-cell"><span class="ma-name">BBA 1 CP</span><span class="ma-state auto">AUTO</span></div>
+        <div class="ma-cell"><span class="ma-name">BBA 2 CP</span><span class="ma-state auto">AUTO</span></div>
+        <div class="ma-cell"><span class="ma-name">BBA 3 CP</span><span class="ma-state auto">AUTO</span></div>
+        <div class="ma-cell"><span class="ma-name">BBA 1 CC</span><span class="ma-state auto">AUTO</span></div>
+        <div class="ma-cell"><span class="ma-name">BBA 2 CC</span><span class="ma-state manual">MAN</span></div>
+        <div class="ma-cell"><span class="ma-name">BBA 3 CC</span><span class="ma-state auto">AUTO</span></div>
+        <div class="ma-cell"><span class="ma-name">BBA 1 CS</span><span class="ma-state auto">AUTO</span></div>
+        <div class="ma-cell"><span class="ma-name">BBA 2 CS</span><span class="ma-state auto">AUTO</span></div>
+        <div class="ma-cell"><span class="ma-name">BBA 3 CS</span><span class="ma-state auto">AUTO</span></div>
+        <div class="ma-cell"><span class="ma-name">TE 1</span><span class="ma-state auto">AUTO</span></div>
+        <div class="ma-cell"><span class="ma-name">TE 2</span><span class="ma-state manual">MAN</span></div>
+        <div class="ma-cell"><span class="ma-name">VEX 16</span><span class="ma-state auto">AUTO</span></div>
+        <div class="ma-cell"><span class="ma-name">VEX 17</span><span class="ma-state auto">AUTO</span></div>
+      </div>
+      <div style="margin-top:14px;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10.5px;">
+        <span style="color:var(--text-dim);">% tiempo todos en AUTO · <span class="period-label">30 días</span></span>
+        <span style="color:var(--warn);font-weight:700;" id="auto-pct-detail">91%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip floating container -->
+<div id="tt"></div>
+
+<script>
+/* ============================================================
+   DATA MODEL — assets, periods, telemetry
+   ============================================================ */
+const ASSETS = {
+  chiller_1: { type: 'chiller', name: 'Chiller 1', specs: 'Carrier 30HXC · 150 TR', sub: 'producción de frío', color: '#4ea1ff' },
+  chiller_2: { type: 'chiller', name: 'Chiller 2', specs: 'Carrier 30HXC · 150 TR', sub: 'producción de frío', color: '#6ec1ff' },
+  bba_1_cp: { type: 'cp', name: 'BBA 1 CP', specs: 'Grundfos · 30 kW', sub: 'bomba primario', color: '#4ea1ff' },
+  bba_2_cp: { type: 'cp', name: 'BBA 2 CP', specs: 'Grundfos · 30 kW', sub: 'bomba primario', color: '#6ec1ff' },
+  bba_3_cp: { type: 'cp', name: 'BBA 3 CP', specs: 'Grundfos · 30 kW · backup', sub: 'bomba primario', color: '#a3e635' },
+  bba_1_cc: { type: 'cc', name: 'BBA 1 CC', specs: 'Grundfos · 45 kW', sub: 'bomba condensador', color: '#4ea1ff' },
+  bba_2_cc: { type: 'cc', name: 'BBA 2 CC', specs: 'Grundfos · 45 kW', sub: 'bomba condensador', color: '#ef4444' },
+  bba_3_cc: { type: 'cc', name: 'BBA 3 CC', specs: 'Grundfos · 45 kW · backup', sub: 'bomba condensador', color: '#a3e635' },
+  torre_1: { type: 'torre', name: 'Torre 1 (TE 1)', specs: 'BAC · 200 TR', sub: 'rechazo térmico', color: '#a3e635' },
+  torre_2: { type: 'torre', name: 'Torre 2 (TE 2)', specs: 'BAC · 200 TR', sub: 'rechazo térmico', color: '#facc15' },
+  bba_1_cs: { type: 'cs', name: 'BBA 1 CS', specs: 'Grundfos · 22 kW', sub: 'bomba secundario', color: '#6ec1ff' },
+  bba_2_cs: { type: 'cs', name: 'BBA 2 CS', specs: 'Grundfos · 22 kW', sub: 'bomba secundario', color: '#a3e635' },
+  bba_3_cs: { type: 'cs', name: 'BBA 3 CS', specs: 'Grundfos · 22 kW · backup', sub: 'bomba secundario', color: '#facc15' }
+};
+
+const PERIODS = {
+  'today': { label: 'Hoy', xLabels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'], samples: 24 },
+  '7d': { label: '7 días', xLabels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'], samples: 7 },
+  '30d': { label: '30 días', xLabels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'], samples: 30 },
+  '1y': { label: '1 año', xLabels: ['Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar','Abr','May'], samples: 12 },
+  'custom': { label: '12 abr — 12 may', xLabels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'], samples: 30 }
+};
+
+const PERIOD_DATA = {
+  'today': {
+    dt_chiller_avg: '6.5', dt_chiller_comp: '92', dt_chiller_delta: '+0.1 °C',
+    dt_torre_avg: '3.6', dt_torre_comp: '74', dt_torre_delta: '−0.2 °C',
+    op_comp: '96', op_seq_ok: '6/6', op_delta: '+1%',
+    auto_pct: '92',
+    matrix: { optimal: 75, hydraulic: 7, rejection: 6, chiller: 12 },
+    seq: { s1: '100', s2: '100', s3: '98', s4: '100', s5: '100', s6: '92' }
+  },
+  '7d': {
+    dt_chiller_avg: '6.4', dt_chiller_comp: '88', dt_chiller_delta: '+0.1 °C',
+    dt_torre_avg: '3.4', dt_torre_comp: '68', dt_torre_delta: '−0.3 °C',
+    op_comp: '95', op_seq_ok: '6/6', op_delta: '+1%',
+    auto_pct: '93',
+    matrix: { optimal: 72, hydraulic: 9, rejection: 7, chiller: 12 },
+    seq: { s1: '100', s2: '100', s3: '96', s4: '99', s5: '100', s6: '90' }
+  },
+  '30d': {
+    dt_chiller_avg: '6.3', dt_chiller_comp: '86', dt_chiller_delta: '+0.2 °C',
+    dt_torre_avg: '3.5', dt_torre_comp: '71', dt_torre_delta: '−0.4 °C',
+    op_comp: '94', op_seq_ok: '5/6', op_delta: '+2%',
+    auto_pct: '91',
+    matrix: { optimal: 67, hydraulic: 10, rejection: 8, chiller: 15 },
+    seq: { s1: '100', s2: '99', s3: '94', s4: '98', s5: '100', s6: '87' }
+  },
+  '1y': {
+    dt_chiller_avg: '5.9', dt_chiller_comp: '78', dt_chiller_delta: '+0.7 °C',
+    dt_torre_avg: '4.1', dt_torre_comp: '74', dt_torre_delta: '−0.2 °C',
+    op_comp: '89', op_seq_ok: '5/6', op_delta: '+5%',
+    auto_pct: '85',
+    matrix: { optimal: 62, hydraulic: 12, rejection: 11, chiller: 15 },
+    seq: { s1: '99', s2: '98', s3: '91', s4: '96', s5: '99', s6: '83' }
+  },
+  'custom': {
+    dt_chiller_avg: '6.3', dt_chiller_comp: '86', dt_chiller_delta: '—',
+    dt_torre_avg: '3.5', dt_torre_comp: '71', dt_torre_delta: '—',
+    op_comp: '94', op_seq_ok: '5/6', op_delta: '—',
+    auto_pct: '91',
+    matrix: { optimal: 67, hydraulic: 10, rejection: 8, chiller: 15 },
+    seq: { s1: '100', s2: '99', s3: '94', s4: '98', s5: '100', s6: '87' }
+  }
+};
+
+// Global state
+let globalPeriod = '30d';
+let selectedAssets = ['chiller_1'];
+let selectedAssetsDist = ['bba_1_cs'];
+let heatmapFilter = null; // for diagnostic matrix filter
+
+/* ============================================================
+   TELEMETRY DATA GENERATORS
+   ============================================================ */
+function seedRandom(seed) {
+  let s = seed;
+  return function() { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+
+function genChillerData(assetId, period) {
+  const rand = seedRandom(assetId.charCodeAt(0) * 100 + period.length);
+  const n = period === 'today' ? 24 : period === '7d' ? 84 : period === '30d' ? 30 : period === 'custom' ? 30 : 24;
+  const onPattern = assetId === 'chiller_2' ? 0.4 : 0.85;
+  const supply = [], return_t = [], delta = [], onState = [];
+  for (let i = 0; i < n; i++) {
+    const isOn = rand() < onPattern;
+    onState.push(isOn ? 1 : 0);
+    if (isOn) {
+      const s = 5.8 + rand() * 1.0;
+      const r = 11.5 + rand() * 1.8;
+      supply.push(s);
+      return_t.push(r);
+      delta.push(r - s);
+    } else {
+      supply.push(null); return_t.push(null); delta.push(null);
+    }
+  }
+  return { supply, return_t, delta, onState };
+}
+
+function genTowerData(assetId, period) {
+  const rand = seedRandom(assetId.charCodeAt(0) * 200 + period.length);
+  const n = period === 'today' ? 24 : period === '7d' ? 84 : period === '30d' ? 30 : period === 'custom' ? 30 : 24;
+  const baseDt = assetId === 'torre_2' ? 3.1 : 3.8;
+  const inT = [], outT = [], delta = [], onState = [];
+  for (let i = 0; i < n; i++) {
+    const isOn = rand() < 0.9;
+    onState.push(isOn ? 1 : 0);
+    if (isOn) {
+      const dt = baseDt + (rand() - 0.5) * 1.5;
+      const out = 25 + rand() * 1.5;
+      inT.push(out + dt);
+      outT.push(out);
+      delta.push(dt);
+    } else {
+      inT.push(null); outT.push(null); delta.push(null);
+    }
+  }
+  return { inT, outT, delta, onState };
+}
+
+function genPumpData(assetId, period) {
+  const rand = seedRandom(assetId.charCodeAt(0) * 300 + period.length);
+  const n = period === 'today' ? 24 : period === '7d' ? 84 : period === '30d' ? 30 : period === 'custom' ? 30 : 24;
+  const onProb = assetId.includes('_1_') ? 0.9 : assetId.includes('_2_') ? 0.35 : 0.65;
+  const isFault = assetId === 'bba_2_cc';
+  const onState = [], mode = [], fault = [];
+  for (let i = 0; i < n; i++) {
+    onState.push(rand() < onProb ? 1 : 0);
+    mode.push(assetId === 'bba_2_cc' ? 0 : 1);
+    fault.push(isFault && rand() < 0.6 ? 1 : 0);
+  }
+  return { onState, mode, fault };
+}
+
+/* ============================================================
+   RENDERING — Chart SVG
+   ============================================================ */
+function renderTelemetry(scope) {
+  const assets = scope === 'distribucion' ? selectedAssetsDist : selectedAssets;
+  const period = globalPeriod;
+  const chartEl = document.getElementById(scope === 'distribucion' ? 'telemetry-chart-dist' : 'telemetry-chart');
+  const legendEl = document.getElementById(scope === 'distribucion' ? 'telemetry-legend-dist' : 'telemetry-legend');
+  const titleEl = document.getElementById(scope === 'distribucion' ? 'telemetry-title-dist' : 'telemetry-title');
+  const periodEl = document.getElementById(scope === 'distribucion' ? 'telemetry-period-dist' : 'telemetry-period');
+  const namesEl = document.getElementById(scope === 'distribucion' ? 'detail-asset-names-dist' : 'detail-asset-names');
+  const subEl = document.getElementById(scope === 'distribucion' ? 'detail-asset-sub-dist' : 'detail-asset-sub');
+  const clearBtn = document.getElementById(scope === 'distribucion' ? 'clear-selection-btn-dist' : 'clear-selection-btn');
+  const miniEl = document.getElementById(scope === 'distribucion' ? 'asset-mini-kpis-dist' : 'asset-mini-kpis');
+
+  if (!chartEl) return;
+
+  const names = assets.map(id => ASSETS[id].name).join(' · ');
+  const specs = assets.length === 1 ? ' · ' + ASSETS[assets[0]].specs : '';
+  namesEl.textContent = names;
+  const types = [...new Set(assets.map(id => ASSETS[id].type))];
+  subEl.innerHTML = '· ' + (types.length === 1 ? ASSETS[assets[0]].sub : 'comparación múltiple') + specs;
+  titleEl.textContent = 'Telemetría · ' + names;
+  periodEl.innerHTML = PERIODS[period].label + ' · ' + assets.length + ' asset' + (assets.length > 1 ? 's' : '') + ' <span class="freshness">· actualizado hace 5s</span>';
+  clearBtn.style.display = assets.length > 1 ? 'inline-block' : 'none';
+
+  const firstType = ASSETS[assets[0]].type;
+  const allSameType = assets.every(id => ASSETS[id].type === firstType);
+
+  if (!allSameType) {
+    chartEl.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-mute);font-size:11px;">Selecciona assets del mismo tipo para comparar telemetría</div>';
+    legendEl.innerHTML = '';
+    miniEl.innerHTML = '';
+    return;
+  }
+
+  if (firstType === 'chiller') {
+    renderChillerChart(chartEl, legendEl, assets, period);
+    renderChillerKPIs(miniEl, assets, period);
+  } else if (firstType === 'torre') {
+    renderTowerChart(chartEl, legendEl, assets, period);
+    renderTowerKPIs(miniEl, assets, period);
+  } else {
+    renderPumpChart(chartEl, legendEl, assets, period);
+    renderPumpKPIs(miniEl, assets, period);
+  }
+}
+
+function polyline(data, color, dash = false) {
+  const n = data.length;
+  let pts = '';
+  for (let i = 0; i < n; i++) {
+    if (data[i] === null) continue;
+    pts += (40 + (i / (n - 1)) * 1050) + ',' + data[i] + ' ';
+  }
+  return `<polyline fill="none" stroke="${color}" stroke-width="${dash ? '1.4' : '1.6'}" ${dash ? 'stroke-dasharray="3,2"' : ''} points="${pts.trim()}"/>`;
+}
+
+function tempToY(t, min, max) {
+  if (t === null || t === undefined) return null;
+  return 24 + ((max - t) / (max - min)) * 160;
+}
+
+function renderChillerChart(el, legend, assets, period) {
+  const min = 3, max = 15;
+  let svg = '<svg viewBox="0 0 1100 220" preserveAspectRatio="none">';
+  svg += '<g font-family="JetBrains Mono" font-size="9" fill="#5a6f8f">';
+  [15, 12, 9, 6, 3].forEach((v, i) => {
+    svg += `<text x="30" y="${24 + i * 40}" text-anchor="end">${v}</text>`;
+  });
+  svg += '<text x="30" y="195" text-anchor="end" fill="#8fa3c2">°C</text></g>';
+  svg += '<g stroke="#243a5e" stroke-width="0.4" opacity="0.5">';
+  [24, 64, 104, 144, 184].forEach(y => {
+    svg += `<line x1="40" y1="${y}" x2="1090" y2="${y}"/>`;
+  });
+  svg += '</g>';
+  svg += `<rect x="40" y="${tempToY(7, min, max)}" width="1050" height="${tempToY(5, min, max) - tempToY(7, min, max)}" fill="rgba(52,211,153,0.06)"/>`;
+  let stripY = 6;
+  assets.forEach((id, idx) => {
+    const d = genChillerData(id, period);
+    const stripH = 4;
+    let prevState = d.onState[0];
+    let prevX = 40;
+    d.onState.forEach((s, i) => {
+      const x = 40 + (i / (d.onState.length - 1)) * 1050;
+      if (s !== prevState || i === d.onState.length - 1) {
+        const color = prevState === 1 ? ASSETS[id].color : '#3a4a66';
+        svg += `<rect x="${prevX}" y="${stripY + idx * (stripH + 2)}" width="${x - prevX}" height="${stripH}" fill="${color}" opacity="0.7"/>`;
+        prevState = s;
+        prevX = x;
+      }
+    });
+  });
+  assets.forEach((id, idx) => {
+    const d = genChillerData(id, period);
+    const c = ASSETS[id].color;
+    const dash = idx > 0;
+    const supply = d.supply.map(v => tempToY(v, min, max));
+    const returnT = d.return_t.map(v => tempToY(v, min, max));
+    const delta = d.delta.map(v => tempToY(v, min, max));
+    svg += polyline(returnT, '#ef4444', dash);
+    svg += polyline(supply, '#6ec1ff', dash);
+    svg += polyline(delta, c, false).replace('stroke-width="1.6"', 'stroke-width="2.5"');
+  });
+  svg += '<g font-family="JetBrains Mono" font-size="9" fill="#5a6f8f">';
+  const labels = PERIODS[period].xLabels;
+  labels.forEach((lbl, i) => {
+    const x = 40 + (i / (labels.length - 1)) * 1050;
+    svg += `<text x="${x}" y="210" ${i === 0 ? '' : i === labels.length - 1 ? 'text-anchor="end"' : 'text-anchor="middle"'}>${lbl}</text>`;
+  });
+  svg += '</g></svg>';
+  el.innerHTML = svg;
+  let legHtml = '';
+  if (assets.length === 1) {
+    legHtml += '<div class="item"><span class="sw" style="background:#ef4444"></span>Return Temp</div>';
+    legHtml += '<div class="item"><span class="sw" style="background:#6ec1ff"></span>Supply Temp</div>';
+    legHtml += `<div class="item"><span class="sw" style="background:${ASSETS[assets[0]].color};height:4px;"></span>ΔT ${ASSETS[assets[0]].name}</div>`;
+    legHtml += `<div class="item"><span class="sw" style="background:${ASSETS[assets[0]].color};height:8px;"></span>Estado ON</div>`;
+  } else {
+    legHtml += '<div class="item"><span class="sw" style="background:#ef4444"></span>Return Temp (todos)</div>';
+    legHtml += '<div class="item"><span class="sw" style="background:#6ec1ff"></span>Supply Temp (todos)</div>';
+    assets.forEach(id => {
+      legHtml += `<div class="item"><span class="sw" style="background:${ASSETS[id].color};height:4px;"></span>ΔT ${ASSETS[id].name}</div>`;
+    });
+  }
+  legend.innerHTML = legHtml;
+}
+
+function renderTowerChart(el, legend, assets, period) {
+  let svg = '<svg viewBox="0 0 1100 220" preserveAspectRatio="none">';
+  svg += '<g font-family="JetBrains Mono" font-size="9" fill="#5a6f8f">';
+  [32, 28, 24, 8, 4].forEach((v, i) => {
+    svg += `<text x="30" y="${24 + i * 40}" text-anchor="end">${v}</text>`;
+  });
+  svg += '<text x="30" y="195" text-anchor="end" fill="#8fa3c2">°C</text></g>';
+  svg += '<g stroke="#243a5e" stroke-width="0.4" opacity="0.5">';
+  [24, 64, 104, 144, 184].forEach(y => svg += `<line x1="40" y1="${y}" x2="1090" y2="${y}"/>`);
+  svg += '</g>';
+  let stripY = 6;
+  assets.forEach((id, idx) => {
+    const d = genTowerData(id, period);
+    let prevState = d.onState[0]; let prevX = 40;
+    d.onState.forEach((s, i) => {
+      const x = 40 + (i / (d.onState.length - 1)) * 1050;
+      if (s !== prevState || i === d.onState.length - 1) {
+        const color = prevState === 1 ? ASSETS[id].color : '#3a4a66';
+        svg += `<rect x="${prevX}" y="${stripY + idx * 6}" width="${x - prevX}" height="4" fill="${color}" opacity="0.7"/>`;
+        prevState = s; prevX = x;
+      }
+    });
+  });
+  function towerY(v, kind) {
+    if (v === null) return null;
+    if (kind === 'top') return 24 + ((32 - v) / 4) * 80;
+    if (kind === 'bottom') return 144 + ((8 - v) / 4) * 40;
+    return null;
+  }
+  assets.forEach((id, idx) => {
+    const d = genTowerData(id, period);
+    const c = ASSETS[id].color;
+    const dash = idx > 0;
+    const inY = d.inT.map(v => towerY(v, 'top'));
+    const outY = d.outT.map(v => towerY(v, 'top'));
+    const deltaY = d.delta.map(v => towerY(v, 'bottom'));
+    svg += polyline(inY, '#ef4444', dash);
+    svg += polyline(outY, '#6ec1ff', dash);
+    svg += polyline(deltaY, c, false).replace('stroke-width="1.6"', 'stroke-width="2.5"');
+  });
+  svg += '<g font-family="JetBrains Mono" font-size="9" fill="#5a6f8f">';
+  const labels = PERIODS[period].xLabels;
+  labels.forEach((lbl, i) => {
+    const x = 40 + (i / (labels.length - 1)) * 1050;
+    svg += `<text x="${x}" y="210" ${i === 0 ? '' : i === labels.length - 1 ? 'text-anchor="end"' : 'text-anchor="middle"'}>${lbl}</text>`;
+  });
+  svg += '</g></svg>';
+  el.innerHTML = svg;
+  let legHtml = '<div class="item"><span class="sw" style="background:#ef4444"></span>Entrada (caliente)</div>';
+  legHtml += '<div class="item"><span class="sw" style="background:#6ec1ff"></span>Salida (fría)</div>';
+  assets.forEach(id => {
+    legHtml += `<div class="item"><span class="sw" style="background:${ASSETS[id].color};height:4px;"></span>ΔT ${ASSETS[id].name}</div>`;
+  });
+  legend.innerHTML = legHtml;
+}
+
+function renderPumpChart(el, legend, assets, period) {
+  const rowH = 30;
+  const totalH = Math.max(160, 50 + assets.length * rowH * 2);
+  let svg = `<svg viewBox="0 0 1100 ${totalH}" preserveAspectRatio="none">`;
+  let yOffset = 20;
+  assets.forEach((id, idx) => {
+    const baseY = yOffset + idx * rowH * 2;
+    const d = genPumpData(id, period);
+    svg += `<text x="30" y="${baseY + 12}" text-anchor="end" font-family="JetBrains Mono" font-size="10" fill="#5a6f8f">${ASSETS[id].name}</text>`;
+    svg += `<text x="30" y="${baseY + 24}" text-anchor="end" font-family="JetBrains Mono" font-size="9" fill="#8fa3c2">ON/OFF</text>`;
+    let prevState = d.onState[0]; let prevX = 40;
+    d.onState.forEach((s, i) => {
+      const x = 40 + (i / (d.onState.length - 1)) * 1050;
+      if (s !== prevState || i === d.onState.length - 1) {
+        const color = prevState === 1 ? ASSETS[id].color : '#3a4a66';
+        svg += `<rect x="${prevX}" y="${baseY + 6}" width="${x - prevX}" height="14" fill="${color}" opacity="0.85" rx="2"/>`;
+        prevState = s; prevX = x;
+      }
+    });
+    svg += `<text x="30" y="${baseY + rowH + 22}" text-anchor="end" font-family="JetBrains Mono" font-size="9" fill="#8fa3c2">MODE</text>`;
+    const modeColor = d.mode[0] === 1 ? '#4ea1ff' : '#f59e0b';
+    svg += `<rect x="40" y="${baseY + rowH + 4}" width="1050" height="14" fill="${modeColor}" opacity="0.75" rx="2"/>`;
+  });
+  svg += '<g font-family="JetBrains Mono" font-size="9" fill="#5a6f8f">';
+  const labels = PERIODS[period].xLabels;
+  labels.forEach((lbl, i) => {
+    const x = 40 + (i / (labels.length - 1)) * 1050;
+    svg += `<text x="${x}" y="${totalH - 8}" ${i === 0 ? '' : i === labels.length - 1 ? 'text-anchor="end"' : 'text-anchor="middle"'}>${lbl}</text>`;
+  });
+  svg += '</g></svg>';
+  el.style.height = totalH + 'px';
+  el.innerHTML = svg;
+  let legHtml = '';
+  assets.forEach(id => {
+    legHtml += `<div class="item"><span class="sw" style="background:${ASSETS[id].color};height:8px;"></span>${ASSETS[id].name} ON</div>`;
+  });
+  legHtml += '<div class="item"><span class="sw" style="background:#3a4a66;height:8px;"></span>OFF</div>';
+  legHtml += '<div class="item"><span class="sw" style="background:#4ea1ff;height:8px;"></span>AUTO</div>';
+  legHtml += '<div class="item"><span class="sw" style="background:#f59e0b;height:8px;"></span>MANUAL</div>';
+  legend.innerHTML = legHtml;
+}
+
+function renderChillerKPIs(el, assets, period) {
+  const cards = assets.map(id => {
+    const d = genChillerData(id, period);
+    const validDt = d.delta.filter(v => v !== null);
+    const avg = validDt.length ? (validDt.reduce((a, b) => a + b, 0) / validDt.length).toFixed(1) : '—';
+    const compliance = validDt.length ? Math.round(validDt.filter(v => v >= 5 && v <= 7).length / validDt.length * 100) : 0;
+    const onHours = d.onState.filter(s => s === 1).length;
+    const totalH = d.onState.length;
+    const onPct = Math.round(onHours / totalH * 100);
+    const cls = avg >= 5 && avg <= 7 ? 'ok' : avg >= 3 ? 'warn' : 'crit';
+    return `
+      <div class="mini-kpi">
+        <div class="mini-kpi-label">${ASSETS[id].name} · ΔT prom</div>
+        <div class="mini-kpi-value ${cls}">${avg}<span class="unit">°C</span></div>
+        <div class="mini-kpi-sub">Compliance ${compliance}% · ON ${onPct}%</div>
+      </div>`;
+  }).join('');
+  el.innerHTML = cards;
+}
+
+function renderTowerKPIs(el, assets, period) {
+  const cards = assets.map(id => {
+    const d = genTowerData(id, period);
+    const valid = d.delta.filter(v => v !== null);
+    const avg = valid.length ? (valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(1) : '—';
+    const compliance = valid.length ? Math.round(valid.filter(v => v >= 4 && v <= 6).length / valid.length * 100) : 0;
+    const onPct = Math.round(d.onState.filter(s => s === 1).length / d.onState.length * 100);
+    const cls = avg >= 4 && avg <= 6 ? 'ok' : avg >= 2 ? 'warn' : 'crit';
+    return `
+      <div class="mini-kpi">
+        <div class="mini-kpi-label">${ASSETS[id].name} · ΔT prom</div>
+        <div class="mini-kpi-value ${cls}">${avg}<span class="unit">°C</span></div>
+        <div class="mini-kpi-sub">Compliance ${compliance}% · ON ${onPct}%</div>
+      </div>`;
+  }).join('');
+  el.innerHTML = cards;
+}
+
+function renderPumpKPIs(el, assets, period) {
+  const cards = assets.map(id => {
+    const d = genPumpData(id, period);
+    const onPct = Math.round(d.onState.filter(s => s === 1).length / d.onState.length * 100);
+    const autoPct = Math.round(d.mode.filter(m => m === 1).length / d.mode.length * 100);
+    const faults = d.fault.filter(f => f === 1).length;
+    const cls = faults > 0 ? 'crit' : autoPct < 100 ? 'warn' : 'ok';
+    return `
+      <div class="mini-kpi">
+        <div class="mini-kpi-label">${ASSETS[id].name}</div>
+        <div class="mini-kpi-value ${cls}">${onPct}<span class="unit">% ON</span></div>
+        <div class="mini-kpi-sub">AUTO ${autoPct}% · Fallas: ${faults}</div>
+      </div>`;
+  }).join('');
+  el.innerHTML = cards;
+}
+
+/* ============================================================
+   HEATMAP
+   ============================================================ */
+const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+function genHeatmapData(assetIds, period, filter) {
+  const grid = [];
+  const seed = assetIds.join('|').length + period.length * 7 + (filter ? filter.length : 0);
+  const rand = seedRandom(seed);
+  for (let d = 0; d < 7; d++) {
+    const row = [];
+    const isWeekend = d >= 5;
+    for (let h = 0; h < 24; h++) {
+      let val;
+      if (isWeekend) {
+        if (h >= 8 && h <= 14) val = 5 + rand() * 15;
+        else val = rand() * 5;
+      } else {
+        if (h < 6) val = rand() * 3;
+        else if (h < 7) val = 15 + rand() * 20;
+        else if (h >= 7 && h <= 18) {
+          const peakBase = h >= 11 && h <= 16 ? 88 : 70;
+          val = peakBase + (rand() - 0.5) * 15;
+        }
+        else if (h <= 20) val = 30 + rand() * 25;
+        else val = rand() * 8;
+      }
+      val = Math.min(100, Math.max(0, val));
+      if (d === 4 && h >= 16) val *= 0.5;
+      // If quadrant filter applied, only show certain cells
+      if (filter) {
+        if (filter === 'rejection' && !(h >= 14 && h <= 17 && d < 5)) val *= 0.1;
+        else if (filter === 'hydraulic' && !((h >= 7 && h <= 9) || (h >= 17 && h <= 18)) && d < 5) val *= 0.1;
+        else if (filter === 'chiller' && !(d === 4 && h >= 11 && h <= 14)) val *= 0.1;
+      }
+      row.push(Math.round(val));
+    }
+    grid.push(row);
+  }
+  return grid;
+}
+
+function colorForValue(v) {
+  const alpha = Math.max(0.05, Math.min(1, v / 100));
+  if (v >= 95) return '#34d399';
+  return `rgba(52, 211, 153, ${alpha})`;
+}
+
+function colorForAlarmCount(v) {
+  // v is count of alarms (0-5+)
+  const intensity = Math.min(1, v / 5);
+  if (intensity === 0) return 'rgba(239,68,68,0.05)';
+  return `rgba(239, 68, 68, ${0.15 + intensity * 0.7})`;
+}
+
+function genAlarmHeatmapData(period) {
+  // Simula cantidad de alarmas levantadas por día×hora
+  const rand = seedRandom(period.length * 13);
+  const grid = [];
+  for (let d = 0; d < 7; d++) {
+    const row = [];
+    const isWeekend = d >= 5;
+    for (let h = 0; h < 24; h++) {
+      let val = 0;
+      // More alarms during peak hours and Tuesday/Wednesday patterns
+      if (!isWeekend && h >= 11 && h <= 16) {
+        val = Math.round(rand() * 4 + (d === 2 || d === 3 ? 1 : 0));
+      } else if (!isWeekend && (h >= 7 && h <= 10)) {
+        val = Math.round(rand() * 2);
+      } else if (h >= 17 && h <= 20 && !isWeekend) {
+        val = Math.round(rand() * 2.5);
+      } else if (isWeekend && h >= 10 && h <= 14) {
+        val = Math.round(rand() * 1.5);
+      } else {
+        val = Math.round(rand() * 0.8);
+      }
+      row.push(val);
+    }
+    grid.push(row);
+  }
+  return grid;
+}
+
+function renderAlarmHeatmap() {
+  const container = document.getElementById('alarms-heatmap');
+  if (!container) return;
+  const grid = genAlarmHeatmapData(globalPeriod);
+  let html = '<div class="heatmap">';
+  html += '<div class="hm-corner"></div>';
+  for (let h = 0; h < 24; h++) {
+    html += `<div class="hm-hour">${h % 3 === 0 ? String(h).padStart(2, '0') : '·'}</div>`;
+  }
+  DAYS.forEach((day, d) => {
+    const isWeekend = d >= 5;
+    html += `<div class="hm-day ${isWeekend ? 'weekend' : ''}">${day}</div>`;
+    for (let h = 0; h < 24; h++) {
+      const v = grid[d][h];
+      const tooltip = `${day} ${String(h).padStart(2, '0')}:00 — ${v} evento${v !== 1 ? 's' : ''}`;
+      html += `<div class="hm-cell" style="background:${colorForAlarmCount(v)}" title="${tooltip}"></div>`;
+    }
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderHeatmap(containerId, assetIds, period, options) {
+  options = options || {};
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const filter = options.filter || (containerId === 'overview-heatmap' ? heatmapFilter : null);
+  const grid = genHeatmapData(assetIds, period, filter);
+  const showNumbers = container.dataset.showNumbers === '1';
+  let html = '<div class="heatmap">';
+  html += '<div class="hm-corner"></div>';
+  for (let h = 0; h < 24; h++) {
+    html += `<div class="hm-hour">${h % 3 === 0 ? String(h).padStart(2, '0') : '·'}</div>`;
+  }
+  DAYS.forEach((day, d) => {
+    const isWeekend = d >= 5;
+    html += `<div class="hm-day ${isWeekend ? 'weekend' : ''}">${day}</div>`;
+    for (let h = 0; h < 24; h++) {
+      const v = grid[d][h];
+      const tooltip = `${day} ${String(h).padStart(2, '0')}:00 — ${v}% ON`;
+      const numStyle = showNumbers ? `font-size:8px;color:${v > 50 ? '#0a1424' : '#e6ecf5'};display:flex;align-items:center;justify-content:center;font-family:JetBrains Mono;font-weight:700;` : '';
+      const inner = showNumbers ? v : '';
+      html += `<div class="hm-cell" style="background:${colorForValue(v)};${numStyle}" title="${tooltip}">${inner}</div>`;
+    }
+  });
+  html += '</div>';
+  container.innerHTML = html;
+  if (options.insights) renderHeatmapInsights(options.insights, grid);
+}
+
+function renderHeatmapInsights(insightsContainerId, grid) {
+  const el = document.getElementById(insightsContainerId);
+  if (!el) return;
+  let totalCells = 0, sum = 0, weekendSum = 0, weekendCells = 0;
+  let nightSum = 0, nightCells = 0, businessSum = 0, businessCells = 0;
+  for (let d = 0; d < 7; d++) {
+    for (let h = 0; h < 24; h++) {
+      const v = grid[d][h];
+      sum += v; totalCells++;
+      if (d >= 5) { weekendSum += v; weekendCells++; }
+      if (h < 6 || h >= 22) { nightSum += v; nightCells++; }
+      if (d < 5 && h >= 8 && h <= 18) { businessSum += v; businessCells++; }
+    }
+  }
+  const avgBusiness = Math.round(businessSum / businessCells);
+  const avgWeekend = Math.round(weekendSum / weekendCells);
+  const avgNight = Math.round(nightSum / nightCells);
+  el.innerHTML = `
+    <div class="heatmap-insight">
+      <div class="lbl">Horario laboral (L-V 8-18)</div>
+      <div class="val ok">${avgBusiness}% uso prom.</div>
+    </div>
+    <div class="heatmap-insight">
+      <div class="lbl">Fines de semana</div>
+      <div class="val ${avgWeekend > 20 ? 'warn' : 'ok'}">${avgWeekend}% uso prom.</div>
+    </div>
+    <div class="heatmap-insight">
+      <div class="lbl">Horario nocturno (22-06)</div>
+      <div class="val ${avgNight > 15 ? 'warn' : 'ok'}">${avgNight}% uso prom.</div>
+    </div>
+  `;
+}
+
+function renderProduccionHeatmap() {
+  const container = document.getElementById('produccion-heatmap');
+  const metaEl = document.getElementById('heatmap-asset-meta');
+  if (!container) return;
+  const assets = selectedAssets;
+  const currentMeta = metaEl.innerHTML.split('<button')[1] ? '<button' + metaEl.innerHTML.split('<button')[1] : '';
+  if (assets.length === 1) {
+    metaEl.innerHTML = `${ASSETS[assets[0]].name} · % del tiempo ON · ${PERIODS[globalPeriod].label} <span class="freshness">· actualizado hace 5s</span> ${currentMeta}`;
+    renderHeatmap('produccion-heatmap', assets, globalPeriod);
+  } else {
+    metaEl.innerHTML = `${assets.length} assets en comparación · ${PERIODS[globalPeriod].label} <span class="freshness">· actualizado hace 5s</span> ${currentMeta}`;
+    let html = '<div class="heatmap-multi">';
+    assets.forEach(id => {
+      html += `<div class="hm-block">
+        <div class="hm-title">${ASSETS[id].name} <span style="color:var(--text-mute);font-weight:400;font-size:10px;margin-left:6px;">${ASSETS[id].specs}</span></div>
+        <div id="hm-sub-${id}"></div>
+      </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    assets.forEach(id => renderHeatmap(`hm-sub-${id}`, [id], globalPeriod));
+  }
+}
+
+function toggleHeatmapNumbers(containerId, btn) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.dataset.showNumbers = el.dataset.showNumbers === '1' ? '0' : '1';
+  btn.textContent = el.dataset.showNumbers === '1' ? 'Ocultar números' : 'Mostrar números';
+  if (containerId === 'overview-heatmap') {
+    renderHeatmap('overview-heatmap', ['planta'], globalPeriod, { insights: 'overview-heatmap-insights' });
+  } else if (containerId === 'produccion-heatmap') {
+    renderProduccionHeatmap();
+  }
+}
+
+function filterHeatmapByQuadrant(quadrant, cell) {
+  const isActive = cell.classList.contains('active');
+  document.querySelectorAll('.diag-cell').forEach(c => c.classList.remove('active'));
+  if (isActive) {
+    heatmapFilter = null;
+  } else {
+    cell.classList.add('active');
+    heatmapFilter = quadrant === 'optimal' ? null : quadrant;
+    if (quadrant === 'optimal') {
+      // Always show optimal as default active
+      document.getElementById('mtx-optimal').classList.add('active');
+    }
+  }
+  renderHeatmap('overview-heatmap', ['planta'], globalPeriod, { insights: 'overview-heatmap-insights' });
+}
+
+/* ============================================================
+   USER INTERACTIONS
+   ============================================================ */
+function setTab(tab, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.tabs .tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function goToOps() {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-ops').classList.add('active');
+  document.querySelectorAll('.tabs .tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tabs .tab')[3].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleAssetClick(e, assetId, row) {
+  const tableEl = row.closest('table');
+  const scope = tableEl.id === 'distribucion-table' ? 'distribucion' : 'produccion';
+  const sel = scope === 'distribucion' ? selectedAssetsDist : selectedAssets;
+  if (e.ctrlKey || e.metaKey || e.shiftKey) {
+    if (sel.includes(assetId)) {
+      const idx = sel.indexOf(assetId);
+      if (sel.length > 1) sel.splice(idx, 1);
+    } else {
+      sel.push(assetId);
+    }
+  } else {
+    if (scope === 'distribucion') selectedAssetsDist = [assetId];
+    else selectedAssets = [assetId];
+  }
+  refreshSelection(scope);
+}
+
+function selectGroup(type) {
+  let scope, sel;
+  if (type === 'cs') {
+    scope = 'distribucion';
+    sel = Object.keys(ASSETS).filter(id => ASSETS[id].type === 'cs');
+    selectedAssetsDist = sel;
+  } else {
+    scope = 'produccion';
+    sel = Object.keys(ASSETS).filter(id => ASSETS[id].type === type);
+    selectedAssets = sel;
+  }
+  refreshSelection(scope);
+}
+
+function clearAssetSelection(scope) {
+  scope = scope || 'produccion';
+  if (scope === 'distribucion') selectedAssetsDist = [selectedAssetsDist[0]];
+  else selectedAssets = [selectedAssets[0]];
+  refreshSelection(scope);
+}
+
+function refreshSelection(scope) {
+  const sel = scope === 'distribucion' ? selectedAssetsDist : selectedAssets;
+  const tableId = scope === 'distribucion' ? 'distribucion-table' : 'produccion-table';
+  const table = document.getElementById(tableId);
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    tr.classList.remove('selected');
+    const id = tr.getAttribute('data-asset-id');
+    if (id && sel.includes(id)) tr.classList.add('selected');
+  });
+  renderTelemetry(scope);
+  if (scope === 'produccion') renderProduccionHeatmap();
+}
+
+/* ============================================================
+   GLOBAL PERIOD PICKER
+   ============================================================ */
+function setGlobalPeriod(btn) {
+  btn.closest('.period-picker-global').querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  globalPeriod = btn.getAttribute('data-period');
+  // Reset custom button label if not custom
+  if (globalPeriod !== 'custom') {
+    const cb = document.getElementById('custom-period-btn');
+    if (cb) cb.textContent = 'Personalizado';
+  }
+  updateAllForPeriod();
+}
+
+function openDateRange(btn) {
+  document.getElementById('daterange-modal').classList.add('show');
+}
+function closeDateRange() {
+  document.getElementById('daterange-modal').classList.remove('show');
+}
+function applyDateRange() {
+  const from = document.getElementById('dr-from').value;
+  const to = document.getElementById('dr-to').value;
+  if (!from || !to) { closeDateRange(); return; }
+  // Format short
+  function fmt(d) {
+    const date = new Date(d + 'T00:00:00');
+    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return date.getDate() + ' ' + months[date.getMonth()];
+  }
+  const label = fmt(from) + ' — ' + fmt(to);
+  PERIODS.custom.label = label;
+  globalPeriod = 'custom';
+  // Update buttons
+  document.querySelectorAll('#global-period-picker button').forEach(b => b.classList.remove('active'));
+  const cb = document.getElementById('custom-period-btn');
+  cb.classList.add('active');
+  cb.textContent = label;
+  closeDateRange();
+  updateAllForPeriod();
+}
+function applyPreset(preset) {
+  const dr_from = document.getElementById('dr-from');
+  const dr_to = document.getElementById('dr-to');
+  const today = new Date('2026-05-12');
+  let from, to;
+  function toStr(d) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return yyyy + '-' + mm + '-' + dd;
+  }
+  if (preset === 'yesterday') {
+    from = new Date(today); from.setDate(today.getDate() - 1);
+    to = new Date(from);
+  } else if (preset === 'lastWeek') {
+    to = new Date(today); to.setDate(today.getDate() - 7);
+    from = new Date(to); from.setDate(to.getDate() - 6);
+  } else if (preset === 'lastMonth') {
+    to = new Date(today); to.setDate(0);
+    from = new Date(to.getFullYear(), to.getMonth(), 1);
+  } else if (preset === 'q1') {
+    from = new Date('2026-01-01'); to = new Date('2026-03-31');
+  } else if (preset === 'q2') {
+    from = new Date('2026-04-01'); to = new Date('2026-06-30');
+  }
+  if (from && to) {
+    dr_from.value = toStr(from);
+    dr_to.value = toStr(to);
+  }
+}
+
+function classifyDT(val, min, max) {
+  const v = parseFloat(val);
+  if (v >= min && v <= max) return 'ok';
+  if (v >= min - 2 && v < min) return 'warn';
+  return 'crit';
+}
+function classifyPct(val, threshold) {
+  const v = parseFloat(val);
+  if (v >= threshold) return 'ok';
+  if (v >= threshold - 15) return 'warn';
+  return 'crit';
+}
+
+function updateAllForPeriod() {
+  const periodKey = globalPeriod;
+  const d = PERIOD_DATA[periodKey];
+  if (!d) return;
+  const label = PERIODS[periodKey].label;
+
+  // Overview KPIs
+  const k1 = document.getElementById('kpi-dt-chiller');
+  const c1 = classifyDT(d.dt_chiller_avg, 5, 7);
+  if (k1) {
+    k1.className = 'kpi ' + c1;
+    k1.querySelector('.val-avg').textContent = d.dt_chiller_avg;
+    k1.querySelector('.val-avg').className = 'big ' + c1 + ' val-avg';
+    k1.querySelector('.val-comp').textContent = d.dt_chiller_comp;
+    k1.querySelector('.val-comp').className = 'big ' + classifyPct(d.dt_chiller_comp, 80) + ' val-comp';
+    k1.querySelector('.delta').textContent = '▲ +' + d.dt_chiller_delta + ' vs período ant.';
+  }
+  const k2 = document.getElementById('kpi-dt-torre');
+  const c2 = classifyDT(d.dt_torre_avg, 4, 6);
+  if (k2) {
+    k2.className = 'kpi ' + c2;
+    k2.querySelector('.val-avg').textContent = d.dt_torre_avg;
+    k2.querySelector('.val-avg').className = 'big ' + c2 + ' val-avg';
+    k2.querySelector('.val-comp').textContent = d.dt_torre_comp;
+    k2.querySelector('.val-comp').className = 'big ' + classifyPct(d.dt_torre_comp, 80) + ' val-comp';
+    k2.querySelector('.delta').textContent = '▼ ' + d.dt_torre_delta + ' vs período ant.';
+  }
+  const k3 = document.getElementById('kpi-op-comp');
+  const c3 = classifyPct(d.op_comp, 95);
+  if (k3) {
+    k3.className = 'kpi ' + c3;
+    k3.querySelector('.val-avg').textContent = d.op_comp;
+    k3.querySelector('.val-avg').className = 'big ' + c3 + ' val-avg';
+    k3.querySelector('.val-comp').textContent = d.op_seq_ok;
+    k3.querySelector('.val-comp').className = 'big ' + c3 + ' val-comp';
+    k3.querySelector('.delta').textContent = '▲ +' + d.op_delta + ' vs período ant.';
+  }
+  // Matrix
+  const mo = document.querySelector('#mtx-optimal .pct'); if (mo) mo.textContent = d.matrix.optimal + '%';
+  const mh = document.querySelector('#mtx-hydraulic .pct'); if (mh) mh.textContent = d.matrix.hydraulic + '%';
+  const mr = document.querySelector('#mtx-rejection .pct'); if (mr) mr.textContent = d.matrix.rejection + '%';
+  const mc = document.querySelector('#mtx-chiller .pct'); if (mc) mc.textContent = d.matrix.chiller + '%';
+  const mt = document.getElementById('mtx-optimal-text'); if (mt) mt.textContent = d.matrix.optimal + '%';
+  // Sequences
+  Object.entries(d.seq).forEach(([k, v]) => {
+    const el = document.getElementById('seq-' + k);
+    if (el) { el.textContent = v + '%'; el.className = 'seq-pct ' + classifyPct(v, 95); }
+    const elOps = document.getElementById('seq-ops-' + k);
+    if (elOps) { elOps.textContent = v + '%'; elOps.className = 'seq-pct ' + classifyPct(v, 95); }
+  });
+  // Ops tab values
+  const opsCompEl = document.getElementById('ops-comp-val');
+  if (opsCompEl) opsCompEl.textContent = d.op_comp;
+  const autoPctEl = document.getElementById('auto-pct-ops');
+  if (autoPctEl) autoPctEl.textContent = d.auto_pct;
+  const autoPctDetail = document.getElementById('auto-pct-detail');
+  if (autoPctDetail) autoPctDetail.textContent = d.auto_pct + '%';
+  // Period labels
+  document.querySelectorAll('.period-label').forEach(el => el.textContent = label);
+  // Update table cells for asset rows
+  updateAssetTableForPeriod(periodKey);
+  // Re-render dynamic things
+  renderHeatmap('overview-heatmap', ['planta'], periodKey, { insights: 'overview-heatmap-insights' });
+  renderTelemetry('produccion');
+  renderTelemetry('distribucion');
+  renderProduccionHeatmap();
+  renderAlarmHeatmap();
+}
+
+function updateAssetTableForPeriod(periodKey) {
+  // For 'custom' or 'today' fall back to 30d-like data structure
+  let dataKey = periodKey;
+  if (periodKey === 'custom') dataKey = '30d';
+  if (periodKey === 'today') dataKey = '7d';
+  document.querySelectorAll('tr[data-row-values]').forEach(tr => {
+    const raw = tr.getAttribute('data-row-values');
+    if (!raw) return;
+    let data;
+    try {
+      data = JSON.parse(raw.replace(/&quot;/g, '"'));
+    } catch(e) { return; }
+    const v = data[dataKey] || data['30d'];
+    if (!v) return;
+    const cells = tr.querySelectorAll('td');
+    // Layout: 0=name, 1=type, 2=estado, 3=modo, 4=metric, 5=horas, 6=comp
+    // For distribución tab: 0=name, 1=estado, 2=modo, 3=falla, 4=horas, 5=%uso, 6=%auto
+    const isProducc = tr.closest('#produccion-table') !== null;
+    if (isProducc) {
+      if (cells[4]) {
+        cells[4].textContent = v.m;
+        cells[4].className = 'num ' + (v.mc || '');
+        cells[4].style.textAlign = 'right';
+      }
+      if (cells[5]) cells[5].textContent = v.h;
+      if (cells[6]) {
+        cells[6].textContent = v.c;
+        cells[6].className = 'num ' + (v.cc || '');
+        cells[6].style.textAlign = 'right';
+      }
+    } else {
+      // Distribución
+      if (cells[4]) cells[4].textContent = v.h;
+      if (cells[6]) {
+        cells[6].textContent = v.c;
+        cells[6].className = 'num ' + (v.cc || '');
+        cells[6].style.textAlign = 'right';
+      }
+    }
+  });
+}
+
+/* ============================================================
+   FLOW DIAGRAM FILTER
+   ============================================================ */
+function filterTable(type, block) {
+  const diagram = block.closest('.flow-diagram');
+  const isActive = block.classList.contains('active');
+  diagram.querySelectorAll('.flow-block').forEach(b => b.classList.remove('active'));
+  const labels = { cp: 'Bombas Primario', cc: 'Bombas Condensador', chiller: 'Chillers', torre: 'Torres' };
+  if (isActive) { clearFilter(); return; }
+  block.classList.add('active');
+  const table = document.getElementById('produccion-table');
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    if (tr.classList.contains('group-sep')) {
+      tr.style.display = tr.getAttribute('data-group') === type ? '' : 'none';
+    } else if (tr.getAttribute('data-row-type')) {
+      tr.style.display = tr.getAttribute('data-row-type') === type ? '' : 'none';
+    }
+  });
+  const ind = document.getElementById('filter-indicator');
+  document.getElementById('filter-name').textContent = labels[type] || type;
+  ind.style.display = 'inline-flex';
+}
+
+function clearFilter() {
+  document.querySelectorAll('.flow-block.active').forEach(b => b.classList.remove('active'));
+  const table = document.getElementById('produccion-table');
+  if (table) table.querySelectorAll('tbody tr').forEach(tr => tr.style.display = '');
+  const ind = document.getElementById('filter-indicator');
+  if (ind) ind.style.display = 'none';
+}
+
+/* ============================================================
+   TOOLTIPS
+   ============================================================ */
+(function() {
+  const tt = document.getElementById('tt');
+  const MARGIN = 12;
+  function show(e) {
+    const el = e.currentTarget;
+    const text = el.getAttribute('data-tip');
+    if (!text) return;
+    tt.textContent = text;
+    tt.classList.add('show');
+    const rect = el.getBoundingClientRect();
+    const ttRect = tt.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    let top = rect.top - ttRect.height - 8;
+    let left = rect.left + (rect.width / 2) - (ttRect.width / 2);
+    if (top < MARGIN) top = rect.bottom + 8;
+    if (top + ttRect.height > vh - MARGIN) {
+      top = rect.top + (rect.height / 2) - (ttRect.height / 2);
+      left = rect.right + 8;
+      if (left + ttRect.width > vw - MARGIN) left = rect.left - ttRect.width - 8;
+    }
+    if (left < MARGIN) left = MARGIN;
+    if (left + ttRect.width > vw - MARGIN) left = vw - ttRect.width - MARGIN;
+    if (top < MARGIN) top = MARGIN;
+    if (top + ttRect.height > vh - MARGIN) top = vh - ttRect.height - MARGIN;
+    tt.style.left = left + 'px';
+    tt.style.top = top + 'px';
+  }
+  function hide() { tt.classList.remove('show'); }
+  function bind() {
+    document.querySelectorAll('.tip[data-tip]').forEach(el => {
+      el.removeEventListener('mouseenter', show);
+      el.removeEventListener('mouseleave', hide);
+      el.addEventListener('mouseenter', show);
+      el.addEventListener('mouseleave', hide);
+    });
+  }
+  bind();
+  window.rebindTooltips = bind;
+})();
+
+/* ============================================================
+   ALARM BADGE in header
+   ============================================================ */
+function updateAlarmBadge() {
+  const count = 3; // simulated active alarms
+  const badge = document.getElementById('header-alarm-badge');
+  const strip = document.getElementById('overview-alarm-strip');
+  const countEl = document.getElementById('alarm-badge-count');
+  const overviewCount = document.getElementById('overview-alarm-count');
+  if (count > 0) {
+    if (badge) badge.style.display = 'flex';
+    if (countEl) countEl.textContent = count;
+    if (strip) strip.style.display = 'flex';
+    if (overviewCount) overviewCount.textContent = count;
+  } else {
+    if (badge) badge.style.display = 'none';
+    if (strip) strip.style.display = 'none';
+  }
+}
+
+/* ============================================================
+   INITIAL RENDER
+   ============================================================ */
+renderTelemetry('produccion');
+renderTelemetry('distribucion');
+renderProduccionHeatmap();
+renderHeatmap('overview-heatmap', ['planta'], '30d', { insights: 'overview-heatmap-insights' });
+renderAlarmHeatmap();
+updateAlarmBadge();
+</script>
+
+</body>
+</html>
