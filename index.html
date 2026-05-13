@@ -243,10 +243,11 @@ body {
 .settings-row .pick button {
   background: var(--bg-panel-2);
   border: 1px solid var(--border);
-  color: var(--text-dim);
-  font-family: 'Manrope', sans-serif;
-  font-size: 12px;
-  padding: 10px 12px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 14px;
   border-radius: 5px;
   cursor: pointer;
   text-align: left;
@@ -261,10 +262,12 @@ body {
 }
 .settings-row .pick button .sample {
   display: block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 10.5px;
+  font-weight: 500;
   color: var(--text-mute);
-  margin-top: 3px;
+  margin-top: 4px;
+  letter-spacing: 0.2px;
 }
 .settings-row .pick button.active .sample { color: var(--accent); }
 
@@ -2848,15 +2851,14 @@ Equipos en MANUAL no responden a las secuencias automáticas del sistema.">Selec
           <label class="lbl">Formato numérico</label>
           <div class="pick" id="settings-locale-pick">
             <button data-locale="es-CL" onclick="setLocalePref(this)">
-              Chile (es-CL)
-              <span class="sample">1.234,56</span>
+              1.234,56
+              <span class="sample">coma decimal · punto miles</span>
             </button>
             <button data-locale="en-US" onclick="setLocalePref(this)">
-              EE.UU. (en-US)
-              <span class="sample">1,234.56</span>
+              1,234.56
+              <span class="sample">punto decimal · coma miles</span>
             </button>
           </div>
-          <div class="hint">Define separador de miles y decimal.</div>
         </div>
         <div class="settings-row">
           <label class="lbl">Unidad de temperatura</label>
