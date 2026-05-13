@@ -87,11 +87,13 @@ body {
 .timestamp { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-mute); }
 
 /* ===== Date Range Modal ===== */
-#daterange-modal {
+#daterange-modal,
+#settings-modal {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   z-index: 9998;
 }
-#daterange-modal.show {
+#daterange-modal.show,
+#settings-modal.show {
   display: flex !important;
   align-items: center; justify-content: center;
 }
