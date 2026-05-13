@@ -201,6 +201,71 @@ body {
   color: #fff;
 }
 .dr-apply:hover { background: #6ec1ff; }
+
+/* ===== Settings (format preferences) ===== */
+.settings-btn {
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  padding: 0;
+}
+.settings-btn:hover { color: var(--text); background: var(--bg-elev); border-color: var(--accent); }
+.settings-options {
+  display: grid; gap: 14px;
+  margin-bottom: 18px;
+}
+.settings-row { display: flex; flex-direction: column; gap: 6px; }
+.settings-row label.lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.settings-row .hint {
+  font-size: 11px;
+  color: var(--text-mute);
+  margin-top: 2px;
+}
+.settings-row .pick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.settings-row .pick button {
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  padding: 10px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  line-height: 1.3;
+}
+.settings-row .pick button:hover { background: var(--bg-elev); color: var(--text); border-color: var(--accent); }
+.settings-row .pick button.active {
+  background: rgba(78, 161, 255, 0.12);
+  border-color: var(--accent);
+  color: var(--text);
+}
+.settings-row .pick button .sample {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-mute);
+  margin-top: 3px;
+}
+.settings-row .pick button.active .sample { color: var(--accent); }
+
 #header-alarm-badge {
   display: flex; align-items: center; gap: 7px;
   padding: 6px 12px;
@@ -1351,6 +1416,7 @@ body {
       <button data-period="1y" onclick="setGlobalPeriod(this)">1 año</button>
       <button data-period="custom" onclick="openDateRange(this)" id="custom-period-btn">Personalizado</button>
     </div>
+    <button class="settings-btn" onclick="openFormatSettings()" title="Preferencias de formato" aria-label="Preferencias">⚙</button>
     <div id="header-alarm-badge" style="display:none;" onclick="goToOps()" title="Click para ver detalle">
       <span class="alarm-pulse"></span>
       <span id="alarm-badge-count">0</span>
@@ -1631,9 +1697,9 @@ CRITICIDAD: 🟡 Alta">System OFF Consistency</span>
     <div class="panel col-4">
       <div class="panel-header">
         <div class="panel-title"><span class="accent-dot"></span>ΔT Chillers prom. mensual</div>
-        <div class="panel-meta">°C · objetivo 5–7</div>
+        <div class="panel-meta">objetivo 5–7 °C</div>
       </div>
-      <div class="monthly-bars-wrap">
+      <div class="monthly-bars-wrap" data-fmt-temp-container>
         <div class="monthly-bars">
           <div class="bar-col"><span class="bar-value">5.2</span><div class="bar" style="height:55%;background:#f59e0b"></div></div>
           <div class="bar-col"><span class="bar-value">5.4</span><div class="bar" style="height:58%;background:#f59e0b"></div></div>
@@ -1657,9 +1723,9 @@ CRITICIDAD: 🟡 Alta">System OFF Consistency</span>
     <div class="panel col-4">
       <div class="panel-header">
         <div class="panel-title"><span class="accent-dot" style="background:#a3e635"></span>ΔT Torres prom. mensual</div>
-        <div class="panel-meta">°C · objetivo 4–6</div>
+        <div class="panel-meta">objetivo 4–6 °C</div>
       </div>
-      <div class="monthly-bars-wrap">
+      <div class="monthly-bars-wrap" data-fmt-temp-container>
         <div class="monthly-bars">
           <div class="bar-col"><span class="bar-value">4.8</span><div class="bar" style="height:80%;background:#34d399"></div></div>
           <div class="bar-col"><span class="bar-value">4.5</span><div class="bar" style="height:75%;background:#34d399"></div></div>
@@ -1685,7 +1751,7 @@ CRITICIDAD: 🟡 Alta">System OFF Consistency</span>
         <div class="panel-title"><span class="accent-dot" style="background:#4ea1ff"></span>Op. Compliance mensual</div>
         <div class="panel-meta">% · objetivo ≥ 95</div>
       </div>
-      <div class="monthly-bars-wrap">
+      <div class="monthly-bars-wrap" data-fmt-temp-container>
         <div class="monthly-bars">
           <div class="bar-col"><span class="bar-value">78</span><div class="bar" style="height:78%;background:#f59e0b"></div></div>
           <div class="bar-col"><span class="bar-value">82</span><div class="bar" style="height:82%;background:#f59e0b"></div></div>
@@ -2766,10 +2832,240 @@ Equipos en MANUAL no responden a las secuencias automáticas del sistema.">Selec
   </div>
 </div>
 
+<!-- Settings Modal (format preferences) -->
+<div id="settings-modal" style="display:none;">
+  <div class="daterange-backdrop" onclick="closeFormatSettings()"></div>
+  <div class="daterange-content">
+    <div class="daterange-header">
+      <span>Preferencias de formato</span>
+      <button onclick="closeFormatSettings()" class="daterange-close" aria-label="Cerrar">×</button>
+    </div>
+    <div class="daterange-body">
+      <div class="settings-options">
+        <div class="settings-row">
+          <label class="lbl">Formato numérico</label>
+          <div class="pick" id="settings-locale-pick">
+            <button data-locale="es-CL" onclick="setLocalePref(this)">
+              Chile (es-CL)
+              <span class="sample">1.234,56</span>
+            </button>
+            <button data-locale="en-US" onclick="setLocalePref(this)">
+              EE.UU. (en-US)
+              <span class="sample">1,234.56</span>
+            </button>
+          </div>
+          <div class="hint">Define separador de miles y decimal.</div>
+        </div>
+        <div class="settings-row">
+          <label class="lbl">Unidad de temperatura</label>
+          <div class="pick" id="settings-temp-pick">
+            <button data-temp="C" onclick="setTempPref(this)">
+              Celsius
+              <span class="sample">°C</span>
+            </button>
+            <button data-temp="F" onclick="setTempPref(this)">
+              Fahrenheit
+              <span class="sample">°F</span>
+            </button>
+          </div>
+          <div class="hint">Los datos se almacenan en °C y se convierten al mostrarse.</div>
+        </div>
+      </div>
+      <div class="daterange-footer">
+        <button onclick="closeFormatSettings()" class="dr-btn dr-apply">Listo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Tooltip floating container -->
 <div id="tt"></div>
 
 <script>
+/* ============================================================
+   FORMAT — locale (es-CL / en-US) y unidad de temperatura (°C / °F)
+   ============================================================ */
+const Fmt = {
+  locale: 'es-CL',  // 'es-CL' = 1.234,56  ·  'en-US' = 1,234.56
+  tempUnit: 'C',    // 'C' | 'F'  (datos siempre en °C, se convierte al mostrar)
+
+  load() {
+    try {
+      const s = JSON.parse(localStorage.getItem('bch:fmt') || '{}');
+      if (s.locale === 'es-CL' || s.locale === 'en-US') this.locale = s.locale;
+      if (s.tempUnit === 'C' || s.tempUnit === 'F') this.tempUnit = s.tempUnit;
+    } catch (e) { /* ignore */ }
+  },
+  save() {
+    try { localStorage.setItem('bch:fmt', JSON.stringify({ locale: this.locale, tempUnit: this.tempUnit })); } catch (e) {}
+  },
+
+  // Parsea string "6.3" o "6,3" o número, devuelve número o NaN.
+  _parse(v) {
+    if (typeof v === 'number') return v;
+    if (v == null) return NaN;
+    let s = String(v).trim();
+    // Quita signo unicode "−" → "-"
+    s = s.replace(/^[−]/, '-');
+    // Si tiene coma decimal estilo es-CL: "1.234,56" → "1234.56"
+    if (/,/.test(s) && /\./.test(s)) {
+      // asumir formato es-CL
+      s = s.replace(/\./g, '').replace(',', '.');
+    } else if (/,\d+$/.test(s)) {
+      s = s.replace(',', '.');
+    }
+    return parseFloat(s);
+  },
+
+  // Formatea un número con el locale activo, decimales opcionales
+  num(v, decimals) {
+    const n = this._parse(v);
+    if (!isFinite(n)) return String(v);
+    const opts = (decimals != null) ? { minimumFractionDigits: decimals, maximumFractionDigits: decimals } : {};
+    try { return new Intl.NumberFormat(this.locale, opts).format(n); }
+    catch (e) { return String(n); }
+  },
+
+  // Recibe valor en °C y lo devuelve formateado con la unidad activa
+  temp(celsius, decimals) {
+    const c = this._parse(celsius);
+    if (!isFinite(c)) return String(celsius);
+    const d = (decimals != null) ? decimals : 1;
+    const val = (this.tempUnit === 'F') ? (c * 9 / 5 + 32) : c;
+    return this.num(val, d) + ' ' + this.unitSymbol();
+  },
+
+  // Igual que temp pero sin la unidad (la unidad se renderiza aparte en algunos sitios)
+  tempValue(celsius, decimals) {
+    const c = this._parse(celsius);
+    if (!isFinite(c)) return String(celsius);
+    const d = (decimals != null) ? decimals : 1;
+    const val = (this.tempUnit === 'F') ? (c * 9 / 5 + 32) : c;
+    return this.num(val, d);
+  },
+
+  unitSymbol() { return this.tempUnit === 'F' ? '°F' : '°C'; },
+
+  // Convierte un string con patrones "<num> °C" (rangos también) al locale + unidad activos.
+  // Útil para tooltips, panel-meta, etc. que están en HTML hardcodeado.
+  transform(text) {
+    if (text == null) return text;
+    let out = String(text);
+    // Rango con guión normal o medio: "5–7 °C" o "5-7 °C"
+    out = out.replace(/(-?\d+(?:[.,]\d+)?)\s*([–\-])\s*(-?\d+(?:[.,]\d+)?)\s*°C/g,
+      (_, a, sep, b) => this.tempValue(a, this._hasDec(a) ? 1 : 0) + sep + this.tempValue(b, this._hasDec(b) ? 1 : 0) + ' ' + this.unitSymbol());
+    // Valor único con o sin signo
+    out = out.replace(/(-?\d+(?:[.,]\d+)?)\s*°C/g,
+      (_, a) => this.tempValue(a, this._hasDec(a) ? 1 : 0) + ' ' + this.unitSymbol());
+    // Símbolo °C suelto (ej. axis labels o panel-meta "°C · objetivo 5–7")
+    out = out.replace(/°C/g, this.unitSymbol());
+    return out;
+  },
+
+  _hasDec(s) { return /[.,]\d/.test(String(s)); }
+};
+
+// Aplica formato a todo el DOM. Captura el texto original la primera vez (data-fmt-raw)
+// para poder re-aplicar cuando cambien las preferencias.
+function applyFormatting(root) {
+  const scope = root || document.body;
+  // Texto en nodos hoja (excluye <script>, <style>, inputs).
+  const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      const p = n.parentElement;
+      if (!p) return NodeFilter.FILTER_REJECT;
+      const tag = p.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'INPUT' || tag === 'TEXTAREA') return NodeFilter.FILTER_REJECT;
+      const t = n.nodeValue;
+      if (!t || !/°C|°F/.test(t)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  let n; while ((n = walker.nextNode())) nodes.push(n);
+  nodes.forEach(node => {
+    const p = node.parentElement;
+    if (p && !p.dataset.fmtRaw) p.dataset.fmtRaw = node.nodeValue;
+    const raw = (p && p.dataset.fmtRaw) || node.nodeValue;
+    node.nodeValue = Fmt.transform(raw);
+  });
+
+  // Tooltips (data-tip): rangos y °C en texto explicativo
+  document.querySelectorAll('[data-tip]').forEach(el => {
+    if (!el.dataset.tipRaw) el.dataset.tipRaw = el.getAttribute('data-tip');
+    el.setAttribute('data-tip', Fmt.transform(el.dataset.tipRaw));
+  });
+
+  // Valores de temperatura sin unidad adjunta (e.g., barras mensuales).
+  // El contenedor está marcado con [data-fmt-temp-container]; cada .bar-value adentro
+  // tiene su valor crudo en °C que se reformatea según preferencia.
+  document.querySelectorAll('[data-fmt-temp-container] .bar-value').forEach(el => {
+    if (el.dataset.fmtRawNum == null) el.dataset.fmtRawNum = (el.textContent || '').trim();
+    const raw = el.dataset.fmtRawNum;
+    if (raw === '—' || raw === '' || !isFinite(Fmt._parse(raw))) return;
+    el.textContent = Fmt.tempValue(raw, 1);
+  });
+
+  // KPI values whose adjacent unit-span contains °C/°F → formatear como temperatura
+  document.querySelectorAll('.val-avg, .val-comp, .big, .mini-kpi-value').forEach(el => {
+    const next = el.nextElementSibling;
+    if (!next) return;
+    const unit = next.textContent || '';
+    if (!/°C|°F/.test(unit)) return;
+    // El valor crudo es °C (data model lo almacena así). Guardar la primera vez.
+    if (el.dataset.fmtRawNum == null) el.dataset.fmtRawNum = (el.textContent || '').trim();
+    const raw = el.dataset.fmtRawNum;
+    if (raw === '—' || raw === '' || !isFinite(Fmt._parse(raw))) return;
+    el.textContent = Fmt.tempValue(raw, 1);
+    next.textContent = Fmt.unitSymbol();
+  });
+
+  // Labels/títulos que viven en atributos: aria-label, title (solo si contienen °)
+  document.querySelectorAll('[title]').forEach(el => {
+    const t = el.getAttribute('title');
+    if (!t || !/°C|°F/.test(t)) return;
+    if (!el.dataset.titleRaw) el.dataset.titleRaw = t;
+    el.setAttribute('title', Fmt.transform(el.dataset.titleRaw));
+  });
+
+  // Reflect active button states in settings modal
+  document.querySelectorAll('#settings-locale-pick button').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-locale') === Fmt.locale);
+  });
+  document.querySelectorAll('#settings-temp-pick button').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-temp') === Fmt.tempUnit);
+  });
+}
+
+// Handlers del modal
+function openFormatSettings() {
+  document.getElementById('settings-modal').classList.add('show');
+  applyFormatting();
+}
+function closeFormatSettings() {
+  document.getElementById('settings-modal').classList.remove('show');
+}
+function setLocalePref(btn) {
+  Fmt.locale = btn.getAttribute('data-locale') || 'es-CL';
+  Fmt.save();
+  refreshFormattingEverywhere();
+}
+function setTempPref(btn) {
+  Fmt.tempUnit = btn.getAttribute('data-temp') || 'C';
+  Fmt.save();
+  refreshFormattingEverywhere();
+}
+
+// Forzar re-aplicación tras cambios de estado (period, asset selection, etc.)
+function refreshFormattingEverywhere() {
+  applyFormatting();
+  // Re-render de componentes JS-driven que tienen valores numéricos sensibles a unidad/locale
+  if (typeof renderTelemetry === 'function') {
+    renderTelemetry('produccion');
+    renderTelemetry('distribucion');
+  }
+}
+
 /* ============================================================
    DATA MODEL — assets, periods, telemetry
    ============================================================ */
@@ -2978,9 +3274,9 @@ function renderChillerChart(el, legend, assets, period) {
   let svg = '<svg viewBox="0 0 1100 220" preserveAspectRatio="none">';
   svg += '<g font-family="JetBrains Mono" font-size="9" fill="#5a6f8f">';
   [15, 12, 9, 6, 3].forEach((v, i) => {
-    svg += `<text x="30" y="${24 + i * 40}" text-anchor="end">${v}</text>`;
+    svg += `<text x="30" y="${24 + i * 40}" text-anchor="end">${Fmt.tempValue(v, 0)}</text>`;
   });
-  svg += '<text x="30" y="195" text-anchor="end" fill="#8fa3c2">°C</text></g>';
+  svg += `<text x="30" y="195" text-anchor="end" fill="#8fa3c2">${Fmt.unitSymbol()}</text></g>`;
   svg += '<g stroke="#243a5e" stroke-width="0.4" opacity="0.5">';
   [24, 64, 104, 144, 184].forEach(y => {
     svg += `<line x1="40" y1="${y}" x2="1090" y2="${y}"/>`;
@@ -3042,9 +3338,9 @@ function renderTowerChart(el, legend, assets, period) {
   let svg = '<svg viewBox="0 0 1100 220" preserveAspectRatio="none">';
   svg += '<g font-family="JetBrains Mono" font-size="9" fill="#5a6f8f">';
   [32, 28, 24, 8, 4].forEach((v, i) => {
-    svg += `<text x="30" y="${24 + i * 40}" text-anchor="end">${v}</text>`;
+    svg += `<text x="30" y="${24 + i * 40}" text-anchor="end">${Fmt.tempValue(v, 0)}</text>`;
   });
-  svg += '<text x="30" y="195" text-anchor="end" fill="#8fa3c2">°C</text></g>';
+  svg += `<text x="30" y="195" text-anchor="end" fill="#8fa3c2">${Fmt.unitSymbol()}</text></g>`;
   svg += '<g stroke="#243a5e" stroke-width="0.4" opacity="0.5">';
   [24, 64, 104, 144, 184].forEach(y => svg += `<line x1="40" y1="${y}" x2="1090" y2="${y}"/>`);
   svg += '</g>';
@@ -3140,16 +3436,17 @@ function renderChillerKPIs(el, assets, period) {
   const cards = assets.map(id => {
     const d = genChillerData(id, period);
     const validDt = d.delta.filter(v => v !== null);
-    const avg = validDt.length ? (validDt.reduce((a, b) => a + b, 0) / validDt.length).toFixed(1) : '—';
+    const avgRaw = validDt.length ? (validDt.reduce((a, b) => a + b, 0) / validDt.length) : null;
+    const avgDisp = avgRaw !== null ? Fmt.tempValue(avgRaw, 1) : '—';
     const compliance = validDt.length ? Math.round(validDt.filter(v => v >= 5 && v <= 7).length / validDt.length * 100) : 0;
     const onHours = d.onState.filter(s => s === 1).length;
     const totalH = d.onState.length;
     const onPct = Math.round(onHours / totalH * 100);
-    const cls = avg >= 5 && avg <= 7 ? 'ok' : avg >= 3 ? 'warn' : 'crit';
+    const cls = avgRaw !== null && avgRaw >= 5 && avgRaw <= 7 ? 'ok' : avgRaw !== null && avgRaw >= 3 ? 'warn' : 'crit';
     return `
       <div class="mini-kpi">
         <div class="mini-kpi-label">${ASSETS[id].name} · ΔT prom</div>
-        <div class="mini-kpi-value ${cls}">${avg}<span class="unit">°C</span></div>
+        <div class="mini-kpi-value ${cls}">${avgDisp}<span class="unit">${Fmt.unitSymbol()}</span></div>
         <div class="mini-kpi-sub">Compliance ${compliance}% · ON ${onPct}%</div>
       </div>`;
   }).join('');
@@ -3160,14 +3457,15 @@ function renderTowerKPIs(el, assets, period) {
   const cards = assets.map(id => {
     const d = genTowerData(id, period);
     const valid = d.delta.filter(v => v !== null);
-    const avg = valid.length ? (valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(1) : '—';
+    const avgRaw = valid.length ? (valid.reduce((a, b) => a + b, 0) / valid.length) : null;
+    const avgDisp = avgRaw !== null ? Fmt.tempValue(avgRaw, 1) : '—';
     const compliance = valid.length ? Math.round(valid.filter(v => v >= 4 && v <= 6).length / valid.length * 100) : 0;
     const onPct = Math.round(d.onState.filter(s => s === 1).length / d.onState.length * 100);
-    const cls = avg >= 4 && avg <= 6 ? 'ok' : avg >= 2 ? 'warn' : 'crit';
+    const cls = avgRaw !== null && avgRaw >= 4 && avgRaw <= 6 ? 'ok' : avgRaw !== null && avgRaw >= 2 ? 'warn' : 'crit';
     return `
       <div class="mini-kpi">
         <div class="mini-kpi-label">${ASSETS[id].name} · ΔT prom</div>
-        <div class="mini-kpi-value ${cls}">${avg}<span class="unit">°C</span></div>
+        <div class="mini-kpi-value ${cls}">${avgDisp}<span class="unit">${Fmt.unitSymbol()}</span></div>
         <div class="mini-kpi-sub">Compliance ${compliance}% · ON ${onPct}%</div>
       </div>`;
   }).join('');
@@ -3576,8 +3874,10 @@ function updateAllForPeriod() {
   const c1 = classifyDT(d.dt_chiller_avg, 5, 7);
   if (k1) {
     k1.className = 'kpi ' + c1;
-    k1.querySelector('.val-avg').textContent = d.dt_chiller_avg;
-    k1.querySelector('.val-avg').className = 'big ' + c1 + ' val-avg';
+    const v1 = k1.querySelector('.val-avg');
+    v1.dataset.fmtRawNum = d.dt_chiller_avg;
+    v1.textContent = d.dt_chiller_avg;
+    v1.className = 'big ' + c1 + ' val-avg';
     k1.querySelector('.val-comp').textContent = d.dt_chiller_comp;
     k1.querySelector('.val-comp').className = 'big ' + classifyPct(d.dt_chiller_comp, 80) + ' val-comp';
     k1.querySelector('.delta').textContent = '▲ +' + d.dt_chiller_delta + ' vs período ant.';
@@ -3586,8 +3886,10 @@ function updateAllForPeriod() {
   const c2 = classifyDT(d.dt_torre_avg, 4, 6);
   if (k2) {
     k2.className = 'kpi ' + c2;
-    k2.querySelector('.val-avg').textContent = d.dt_torre_avg;
-    k2.querySelector('.val-avg').className = 'big ' + c2 + ' val-avg';
+    const v2 = k2.querySelector('.val-avg');
+    v2.dataset.fmtRawNum = d.dt_torre_avg;
+    v2.textContent = d.dt_torre_avg;
+    v2.className = 'big ' + c2 + ' val-avg';
     k2.querySelector('.val-comp').textContent = d.dt_torre_comp;
     k2.querySelector('.val-comp').className = 'big ' + classifyPct(d.dt_torre_comp, 80) + ' val-comp';
     k2.querySelector('.delta').textContent = '▼ ' + d.dt_torre_delta + ' vs período ant.';
@@ -3632,6 +3934,8 @@ function updateAllForPeriod() {
   renderTelemetry('distribucion');
   renderProduccionHeatmap();
   renderAlarmHeatmap();
+  // Re-aplicar formato (locale / unidad temperatura) sobre los nuevos textos
+  applyFormatting();
 }
 
 function updateAssetTableForPeriod(periodKey) {
@@ -3774,12 +4078,14 @@ function updateAlarmBadge() {
 /* ============================================================
    INITIAL RENDER
    ============================================================ */
+Fmt.load();
 renderTelemetry('produccion');
 renderTelemetry('distribucion');
 renderProduccionHeatmap();
 renderHeatmap('overview-heatmap', ['planta'], '30d', { insights: 'overview-heatmap-insights' });
 renderAlarmHeatmap();
 updateAlarmBadge();
+applyFormatting();
 </script>
 
 </body>
